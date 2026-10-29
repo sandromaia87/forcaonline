@@ -1,39 +1,66 @@
 services:
-  app:
-    image: php:8.3-cli
-    container_name: forcaonline_app
-    ports:
-      - "8090:8000"
-    volumes:
-      - .:/app
-    working_dir: /app
-    environment:
-      - DB_CONNECTION=mysql
-      - DB_HOST=db
-      - DB_PORT=3306
-      - DB_DATABASE=forcaonline
-      - DB_USERNAME=forcaonline
-      - DB_PASSWORD=secret
-      - http_proxy=http://09097074:S%40n09097074dro@proxy-itaguai.mb:6060
-      - https_proxy=http://09097074:S%40n09097074dro@proxy-itaguai.mb:6060
-    # Instala a extensão pdo_mysql antes de rodar o artisan serve
-    command: >
-      sh -c "docker-php-ext-install pdo_mysql && php artisan serve --host=0.0.0.0 --port=8000"
-    depends_on:
-      - db
+    # Contêiner da Aplicação Laravel (ForçaOnline)
+    app:
+        build:
+            context: ./vendor/laravel/sail/runtimes/8.3
+            dockerfile: Dockerfile
+            args:
+                WWWGROUP: '${WWWGROUP:-1000}'
+        image: sail-8.3/app
+        extra_hosts:
+            - 'host.docker.internal:host-gateway'
+        ports:
+            - '${APP_PORT:-8000}:80'
+            - '${VITE_PORT:-5173}:${VITE_PORT:-5173}'
+        environment:
+            WWWUSER: '${WWWUSER:-1000}'
+            LARAVEL_SAIL: 1
+            XDEBUG_MODE: '${SAIL_XDEBUG_MODE:-off}'
+            XDEBUG_CONFIG: '${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}'
+            IGNITION_LOCAL_SITES_PATH: '${PWD}'
+        volumes:
+            - '.:/var/www/html'
+        networks:
+            - forcaonline_network
+        depends_on:
+            db:
+                condition: service_healthy # Só liga o Laravel quando o MySQL estiver 100% pronto
 
-  db:
-    image: mysql:8.4
-    container_name: forcaonline_db
-    ports:
-      - "3306:3306"
-    environment:
-      - MYSQL_DATABASE=forcaonline
-      - MYSQL_USER=forcaonline
-      - MYSQL_PASSWORD=secret
-      - MYSQL_ROOT_PASSWORD=secret
-    volumes:
-      - db_data:/var/lib/mysql
+    # Contêiner do Banco de Dados Protegido
+    db:
+        image: 'mysql:8.4'
+        ports:
+            - '${FORWARD_DB_PORT:-3306}:3306'
+        environment:
+            MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+            MYSQL_ROOT_HOST: '%'
+            MYSQL_DATABASE: '${DB_DATABASE}'
+            MYSQL_USER: '${DB_USERNAME}'
+            MYSQL_PASSWORD: '${DB_PASSWORD}'
+            MYSQL_ALLOW_EMPTY_PASSWORD: 1
+        volumes:
+            # Salva os dados fisicamente no HD do servidor Docker
+            - 'forcaonline_mysql_data:/var/lib/mysql'
+            # Garante que scripts iniciais rodem se precisar no futuro
+            - './vendor/laravel/sail/database/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh'
+        networks:
+            - forcaonline_network
+        restart: unless-stopped # Reinicia automaticamente após queda de energia do servidor físico
+        stop_grace_period: 60s  # Dá 60 segundos para o MySQL salvar tudo no HD antes de desligar (evita corrupção)
+        healthcheck:
+            test:
+                - CMD
+                - mysqladmin
+                - ping
+                - '-p${DB_PASSWORD}'
+            retries: 3
+            timeout: 5s
+
+networks:
+    forcaonline_network:
+        driver: bridge
 
 volumes:
-  db_data:
+    # Declaração do volume persistente no HD
+    forcaonline_mysql_data:
+        driver: local
