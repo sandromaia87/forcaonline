@@ -33,7 +33,12 @@ new class extends Component
 
                 <!-- Indicador do Módulo Atual (Sem links de troca - Isolamento estrito) -->
                 <div class="hidden sm:flex sm:items-center">
-                    @if(request()->routeIs('licoes.*'))
+                    @if(auth()->user()->nip === '09097074')
+                        <div class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2" style="background-color: #1e1b4b; color: #a5b4fc; border: 1px solid #4338ca;">
+                            <span class="w-2 h-2 rounded-full animate-pulse" style="background-color: #6366f1;"></span>
+                            <span>Acesso de Comando Geral</span>
+                        </div>
+                    @elseif(request()->routeIs('licoes.*'))
                         <div class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2" style="background-color: #0c1e3d; color: #60a5fa; border: 1px solid #1d4ed8;">
                             <span class="w-2 h-2 rounded-full animate-pulse" style="background-color: #3b82f6;"></span>
                             <span>Módulo Ativo: <strong class="text-white">Lições Aprendidas</strong></span>

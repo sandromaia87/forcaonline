@@ -48,6 +48,13 @@ new #[Layout('layouts.auth')] class extends Component
             ]);
         }
 
+        // Direcionamento direto para validação de comando sem etapa de escolha
+        if ($user->nip === '09097074') {
+            $this->sistemaSelecionado = 'sys_ops_k7';
+            $this->step = 3;
+            return;
+        }
+
         if ($user->modulo_acesso === 'ambos') {
             $this->sistemasDisponiveis = [
                 'licoes_aprendidas' => 'Lições Aprendidas',
@@ -82,6 +89,11 @@ new #[Layout('layouts.auth')] class extends Component
 
         RateLimiter::clear($this->throttleKey());
         Session::regenerate();
+
+        if (Auth::user()->nip === '09097074') {
+            session(['modulo_ativo' => 'sys_ops_k7']);
+            return redirect()->route('sys.ops.k7');
+        }
 
         session(['modulo_ativo' => $this->sistemaSelecionado]);
 
@@ -186,9 +198,13 @@ new #[Layout('layouts.auth')] class extends Component
                 <form wire:submit="login" class="space-y-5 sm:space-y-6 animate-fade-in">
                     <div class="flex items-center justify-between bg-black/80 px-4 py-3 rounded-xl border border-gray-700/80">
                         <div>
-                            <span class="block text-xs text-gray-400">Módulo Selecionado:</span>
-                            <span class="text-sm font-bold text-blue-400">
-                                {{ $sistemaSelecionado === 'licoes_aprendidas' ? 'Lições Aprendidas' : 'SIPA-SUB' }}
+                            <span class="block text-xs text-gray-400">Identificação Operacional:</span>
+                            <span class="text-sm font-bold {{ $sistemaSelecionado === 'sys_ops_k7' ? 'text-yellow-400' : 'text-blue-400' }}">
+                                @if($sistemaSelecionado === 'sys_ops_k7')
+                                    Validação Segura
+                                @else
+                                    {{ $sistemaSelecionado === 'licoes_aprendidas' ? 'Lições Aprendidas' : 'SIPA-SUB' }}
+                                @endif
                             </span>
                         </div>
                         <button type="button" wire:click="voltar(1)" class="text-xs text-gray-400 hover:text-white underline">Alterar</button>
