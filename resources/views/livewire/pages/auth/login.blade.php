@@ -136,7 +136,7 @@ new #[Layout('layouts.auth')] class extends Component
                 <form wire:submit="verificarNip" class="space-y-5 sm:space-y-6 animate-fade-in">
                     <div>
                         <label class="block text-sm font-medium text-gray-200 mb-1.5" for="nip">Informe seu NIP</label>
-                        <input wire:model="nip" id="nip" type="text" required autofocus placeholder="09097074" class="block w-full px-4 py-3.5 bg-black/80 border border-gray-700/80 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-mono text-base shadow-inner">
+                        <input wire:model="nip" id="nip" type="text" required autofocus placeholder="Informe seu NIP" class="block w-full px-4 py-3.5 bg-black/80 border border-gray-700/80 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-mono text-base shadow-inner">
                         <x-input-error :messages="$errors->get('nip')" class="mt-2 text-xs text-red-400" />
                     </div>
 
