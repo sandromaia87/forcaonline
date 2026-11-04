@@ -107,10 +107,12 @@ new #[Layout('layouts.auth')] class extends Component
     <!-- Background Submarino Cobrindo Toda a Tela com Fusão Suave -->
     <div class="absolute inset-0 z-0">
         <div class="w-full h-full bg-cover bg-right lg:bg-center" style="background-image: url('{{ asset('img/submarino.webp') }}');"></div>
-        <!-- Degradê Contínuo e Fluido para o Preto Puro (Sem divisórias secas) -->
-        <div class="absolute inset-0 bg-gradient-to-r from-black via-black/90 sm:via-black/85 md:via-black/80 lg:via-black/70 to-transparent"></div>
-        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/60"></div>
-        <div class="absolute inset-0 bg-black/40"></div>
+
+        <!-- Degradê lateral: base preta para o formulário, mas quase transparente na direita -->
+        <div class="absolute inset-0 bg-gradient-to-r from-black via-black/80 sm:via-black/70 md:via-black/40 lg:via-black/10 to-transparent"></div>
+
+        <!-- Vinheta vertical leve (escurece apenas o rodapé e sutilmente o topo) -->
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30"></div>
     </div>
 
     <!-- Lado Esquerdo: Formulário de Autenticação -->
