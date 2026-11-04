@@ -29,4 +29,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function temAcessoAoModulo(string $modulo): bool
+    {
+        return $this->modulo_acesso === 'ambos' || $this->modulo_acesso === $modulo;
+    }
 }

@@ -9,6 +9,18 @@ Volt::route('/', 'pages.auth.login')->name('login')->middleware('guest');
 // Rotas isoladas dos módulos
 Route::middleware(['auth', 'verified'])->group(function () {
 
+    // Redirecionador inteligente para o módulo ativo ou autorizado
+    Route::get('/dashboard', function () {
+        $user = auth()->user();
+        $modulo = session('modulo_ativo', $user->modulo_acesso ?? 'licoes_aprendidas');
+
+        if ($modulo === 'sipa_sub') {
+            return redirect()->route('sipasub.dashboard');
+        }
+
+        return redirect()->route('licoes.dashboard');
+    })->name('dashboard');
+
     // Grupo Lições Aprendidas
     Route::prefix('licoes-aprendidas')->name('licoes.')->group(function () {
         Volt::route('/dashboard', 'pages.licoes.dashboard')->name('dashboard');

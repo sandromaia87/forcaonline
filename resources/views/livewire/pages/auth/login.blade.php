@@ -13,7 +13,7 @@ new #[Layout('layouts.auth')] class extends Component
 {
     public int $step = 1;
 
-    #[Validate('required|string')]
+    #[Validate('required|digits:8')]
     public string $nip = '';
 
     public string $password = '';
@@ -22,10 +22,23 @@ new #[Layout('layouts.auth')] class extends Component
     public string $sistemaSelecionado = '';
     public array $sistemasDisponiveis = [];
 
+    // Limita estritamente a apenas números e máximo 8 dígitos
+    public function updatedNip($value): void
+    {
+        $this->nip = substr(preg_replace('/[^0-9]/', '', (string) $value), 0, 8);
+    }
+
     // Passo 1: Verifica o NIP e define os acessos
     public function verificarNip()
     {
-        $this->validate(['nip' => 'required|string']);
+        $this->nip = substr(preg_replace('/[^0-9]/', '', (string) $this->nip), 0, 8);
+
+        $this->validate([
+            'nip' => 'required|digits:8',
+        ], [
+            'nip.required' => 'Informe seu NIP militar.',
+            'nip.digits' => 'O NIP deve conter exatamente 8 dígitos numéricos.',
+        ]);
 
         $user = \App\Models\User::where('nip', $this->nip)->first();
 
@@ -135,8 +148,8 @@ new #[Layout('layouts.auth')] class extends Component
             @if($step === 1)
                 <form wire:submit="verificarNip" class="space-y-5 sm:space-y-6 animate-fade-in">
                     <div>
-                        <label class="block text-sm font-medium text-gray-200 mb-1.5" for="nip">Informe seu NIP</label>
-                        <input wire:model="nip" id="nip" type="text" required autofocus placeholder="Informe seu NIP" class="block w-full px-4 py-3.5 bg-black/80 border border-gray-700/80 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-mono text-base shadow-inner">
+                        <label class="block text-sm font-medium text-gray-200 mb-1.5" for="nip">Informe seu NIP (8 dígitos numéricos)</label>
+                        <input wire:model.live="nip" id="nip" type="text" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" x-on:input="$el.value = $el.value.replace(/[^0-9]/g, '').slice(0, 8)" required autofocus placeholder="00000000" class="block w-full px-4 py-3.5 bg-black/80 border border-gray-700/80 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-mono text-base shadow-inner tracking-widest">
                         <x-input-error :messages="$errors->get('nip')" class="mt-2 text-xs text-red-400" />
                     </div>
 
