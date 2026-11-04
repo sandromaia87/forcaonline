@@ -255,69 +255,6 @@ new #[Layout('layouts.app')] class extends Component
         </div>
     @endif
 
-    <!-- ========================================================================= -->
-    <!-- 1. LINHA DE CARDS DE MÉTRICAS OPERACIONAIS ARGON (4 CARDS)               -->
-    <!-- ========================================================================= -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        
-        <!-- Card 1: Total Militares -->
-        <div class="p-5 rounded-2xl bg-[#060f1d]/90 backdrop-blur-md border border-gray-800/80 shadow-xl flex items-center justify-between hover:border-blue-500/50 transition-all group">
-            <div>
-                <p class="text-[11px] font-mono uppercase font-bold tracking-wider text-gray-400">Tripulação / NIPs</p>
-                <h3 class="text-2xl font-bold text-white mt-1 group-hover:text-blue-400 transition-colors">{{ count($usuarios) }}</h3>
-                <p class="text-xs text-emerald-400 font-semibold mt-1 flex items-center gap-1">
-                    <span>✓ Sincronizados</span>
-                    <span class="text-gray-400 font-normal">no banco</span>
-                </p>
-            </div>
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-700 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-            </div>
-        </div>
-
-        <!-- Card 2: Módulos Operacionais -->
-        <div class="p-5 rounded-2xl bg-[#060f1d]/90 backdrop-blur-md border border-gray-800/80 shadow-xl flex items-center justify-between hover:border-yellow-500/50 transition-all group">
-            <div>
-                <p class="text-[11px] font-mono uppercase font-bold tracking-wider text-gray-400">Módulos Ativos</p>
-                <h3 class="text-2xl font-bold text-white mt-1 group-hover:text-yellow-400 transition-colors">02</h3>
-                <p class="text-xs text-yellow-400 font-semibold mt-1 flex items-center gap-1">
-                    <span>Lições & SIPA-SUB</span>
-                </p>
-            </div>
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-yellow-600 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-yellow-500/30">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-            </div>
-        </div>
-
-        <!-- Card 3: Sessões e Acesso -->
-        <div class="p-5 rounded-2xl bg-[#060f1d]/90 backdrop-blur-md border border-gray-800/80 shadow-xl flex items-center justify-between hover:border-purple-500/50 transition-all group">
-            <div>
-                <p class="text-[11px] font-mono uppercase font-bold tracking-wider text-gray-400">Sessões Ativas</p>
-                <h3 class="text-2xl font-bold text-white mt-1 group-hover:text-purple-400 transition-colors">01</h3>
-                <p class="text-xs text-purple-400 font-semibold mt-1 flex items-center gap-1">
-                    <span>Criptografia Ativa</span>
-                </p>
-            </div>
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-700 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/30">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-            </div>
-        </div>
-
-        <!-- Card 4: Integridade do Sistema -->
-        <div class="p-5 rounded-2xl bg-[#060f1d]/90 backdrop-blur-md border border-gray-800/80 shadow-xl flex items-center justify-between hover:border-emerald-500/50 transition-all group">
-            <div>
-                <p class="text-[11px] font-mono uppercase font-bold tracking-wider text-gray-400">Integridade</p>
-                <h3 class="text-2xl font-bold text-white mt-1 group-hover:text-emerald-400 transition-colors">100%</h3>
-                <p class="text-xs text-emerald-400 font-semibold mt-1 flex items-center gap-1">
-                    <span>Sem falhas</span>
-                </p>
-            </div>
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-            </div>
-        </div>
-
-    </div>
 
     <!-- ========================================================================= -->
     <!-- 2. TABELA ARGON DASHBOARD PRO - CRUD COMPLETO DE USUÁRIOS/MILITARES       -->
