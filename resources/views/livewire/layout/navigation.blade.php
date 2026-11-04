@@ -31,18 +31,18 @@ new class extends Component
                     </a>
                 </div>
 
-                <!-- Navigation Links baseados no perfil do militar -->
-                <div class="hidden sm:flex sm:items-center sm:gap-2">
-                    @if(auth()->user()->temAcessoAoModulo('licoes_aprendidas'))
-                        <a href="{{ route('licoes.dashboard') }}" wire:navigate class="px-3 py-1.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('licoes.*') ? 'bg-blue-950 text-blue-400 border border-blue-700 font-bold' : 'text-gray-400 hover:text-white hover:bg-gray-900' }}" style="{{ request()->routeIs('licoes.*') ? 'background-color: #0c1e3d; color: #60a5fa; border: 1px solid #1d4ed8;' : 'color: #9ca3af;' }}">
-                            Lições Aprendidas
-                        </a>
-                    @endif
-
-                    @if(auth()->user()->temAcessoAoModulo('sipa_sub'))
-                        <a href="{{ route('sipasub.dashboard') }}" wire:navigate class="px-3 py-1.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('sipasub.*') ? 'bg-amber-950 text-amber-400 border border-amber-700 font-bold' : 'text-gray-400 hover:text-white hover:bg-gray-900' }}" style="{{ request()->routeIs('sipasub.*') ? 'background-color: #271704; color: #fbbf24; border: 1px solid #b45309;' : 'color: #9ca3af;' }}">
-                            SIPA-SUB
-                        </a>
+                <!-- Indicador do Módulo Atual (Sem links de troca - Isolamento estrito) -->
+                <div class="hidden sm:flex sm:items-center">
+                    @if(request()->routeIs('licoes.*'))
+                        <div class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2" style="background-color: #0c1e3d; color: #60a5fa; border: 1px solid #1d4ed8;">
+                            <span class="w-2 h-2 rounded-full animate-pulse" style="background-color: #3b82f6;"></span>
+                            <span>Módulo Ativo: <strong class="text-white">Lições Aprendidas</strong></span>
+                        </div>
+                    @elseif(request()->routeIs('sipasub.*'))
+                        <div class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2" style="background-color: #271704; color: #fbbf24; border: 1px solid #b45309;">
+                            <span class="w-2 h-2 rounded-full animate-pulse" style="background-color: #f59e0b;"></span>
+                            <span>Módulo Ativo: <strong class="text-white">SIPA-SUB</strong></span>
+                        </div>
                     @endif
                 </div>
             </div>
@@ -54,9 +54,10 @@ new class extends Component
                     <div class="text-[11px] font-mono text-gray-400" style="color: #9ca3af;">NIP: <span class="text-yellow-400 font-bold" style="color: #facc15;">{{ auth()->user()->nip }}</span></div>
                 </div>
 
-                <button wire:click="logout" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 shadow" style="background-color: #450a0a; color: #fca5a5; border: 1px solid #991b1b;">
+                <!-- Botão Sair Obrigatório para Trocar de Módulo -->
+                <button wire:click="logout" type="button" title="Para trocar de módulo, é necessário sair e autenticar novamente" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 shadow" style="background-color: #450a0a; color: #fca5a5; border: 1px solid #991b1b;">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                    <span>Sair</span>
+                    <span>Sair (Logout)</span>
                 </button>
             </div>
 
@@ -72,23 +73,21 @@ new class extends Component
         </div>
     </div>
 
-    <!-- Responsive Navigation Menu Mobile -->
+    <!-- Responsive Menu Mobile -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden border-t border-gray-800 px-4 pt-3 pb-4" style="background-color: #060f1d;">
-        <div class="space-y-2">
-            @if(auth()->user()->temAcessoAoModulo('licoes_aprendidas'))
-                <a href="{{ route('licoes.dashboard') }}" wire:navigate class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('licoes.*') ? 'text-blue-400 font-bold' : 'text-gray-300' }}">
-                    Lições Aprendidas
-                </a>
-            @endif
-
-            @if(auth()->user()->temAcessoAoModulo('sipa_sub'))
-                <a href="{{ route('sipasub.dashboard') }}" wire:navigate class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('sipasub.*') ? 'text-amber-400 font-bold' : 'text-gray-300' }}">
-                    SIPA-SUB
-                </a>
+        <div class="mb-3">
+            @if(request()->routeIs('licoes.*'))
+                <span class="inline-block px-3 py-1 rounded text-xs font-semibold" style="background-color: #0c1e3d; color: #60a5fa; border: 1px solid #1d4ed8;">
+                    Módulo Ativo: Lições Aprendidas
+                </span>
+            @elseif(request()->routeIs('sipasub.*'))
+                <span class="inline-block px-3 py-1 rounded text-xs font-semibold" style="background-color: #271704; color: #fbbf24; border: 1px solid #b45309;">
+                    Módulo Ativo: SIPA-SUB
+                </span>
             @endif
         </div>
 
-        <div class="pt-4 pb-2 border-t border-gray-800 mt-3 flex items-center justify-between">
+        <div class="pt-3 pb-2 border-t border-gray-800 flex items-center justify-between">
             <div>
                 <div class="text-sm font-medium text-white" style="color: #ffffff;">{{ auth()->user()->name }}</div>
                 <div class="text-xs font-mono text-gray-400" style="color: #9ca3af;">NIP: <span class="text-yellow-400 font-bold" style="color: #facc15;">{{ auth()->user()->nip }}</span></div>
