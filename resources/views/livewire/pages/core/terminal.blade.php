@@ -232,13 +232,13 @@ new #[Layout('layouts.app')] class extends Component
     }
 }; ?>
 
-<div class="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto select-none space-y-8" x-data="{}" style="color: #ffffff;">
+<div class="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto space-y-6 select-none" x-data="{}">
 
-    <!-- Alertas de Feedback -->
+    <!-- Mensagens de Notificação -->
     @if($mensagemSucesso)
-        <div class="p-4 rounded-xl text-sm font-semibold flex items-center justify-between shadow-lg" style="background-color: #064e3b; color: #a7f3d0; border: 1px solid #059669;">
+        <div class="p-4 rounded-xl text-sm font-semibold flex items-center justify-between shadow-xl bg-emerald-950/80 text-emerald-300 border border-emerald-700/80 animate-fade-in">
             <div class="flex items-center gap-2">
-                <svg class="w-5 h-5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                 <span>{{ $mensagemSucesso }}</span>
             </div>
             <button wire:click="$set('mensagemSucesso', null)" class="text-xs underline hover:text-white cursor-pointer">Fechar</button>
@@ -246,315 +246,391 @@ new #[Layout('layouts.app')] class extends Component
     @endif
 
     @if($mensagemErro)
-        <div class="p-4 rounded-xl text-sm font-semibold flex items-center justify-between shadow-lg" style="background-color: #450a0a; color: #fca5a5; border: 1px solid #991b1b;">
+        <div class="p-4 rounded-xl text-sm font-semibold flex items-center justify-between shadow-xl bg-red-950/80 text-red-300 border border-red-700/80 animate-fade-in">
             <div class="flex items-center gap-2">
-                <svg class="w-5 h-5 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                 <span>{{ $mensagemErro }}</span>
             </div>
             <button wire:click="$set('mensagemErro', null)" class="text-xs underline hover:text-white cursor-pointer">Fechar</button>
         </div>
     @endif
 
-    <!-- Banner Superior do Comando Geral -->
-    <div class="rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden" style="background: linear-gradient(135deg, #111827 0%, #030712 100%); border: 1px solid #374151;">
-        <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div class="flex items-center gap-5">
-                <div class="p-3 rounded-2xl" style="background-color: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.1);">
-                    <img src="{{ asset('img/brasao_0.png') }}" alt="Brasão ComForS" class="h-16 sm:h-20 w-auto object-contain drop-shadow">
-                </div>
-                <div>
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono mb-2" style="background-color: #1e1b4b; color: #c7d2fe; border: 1px solid #4338ca;">
-                        <span class="w-2 h-2 rounded-full animate-pulse" style="background-color: #818cf8;"></span>
-                        <span>Terminal Administrativo Central • Nível Supremo</span>
-                    </div>
-                    <h1 class="text-2xl sm:text-3xl font-bold tracking-tight uppercase" style="font-family: 'Oswald', sans-serif; color: #ffffff;">
-                        Console Geral de Comando & Administração
-                    </h1>
-                    <p class="text-xs sm:text-sm text-gray-400 mt-1">
-                        Gerenciamento completo (CRUD) de militares, permissões táticas e auditoria da ForçaOnline.
-                    </p>
-                </div>
+    <!-- ========================================================================= -->
+    <!-- 1. LINHA DE CARDS DE MÉTRICAS OPERACIONAIS ARGON (4 CARDS)               -->
+    <!-- ========================================================================= -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        
+        <!-- Card 1: Total Militares -->
+        <div class="p-5 rounded-2xl bg-[#060f1d]/90 backdrop-blur-md border border-gray-800/80 shadow-xl flex items-center justify-between hover:border-blue-500/50 transition-all group">
+            <div>
+                <p class="text-[11px] font-mono uppercase font-bold tracking-wider text-gray-400">Tripulação / NIPs</p>
+                <h3 class="text-2xl font-bold text-white mt-1 group-hover:text-blue-400 transition-colors">{{ count($usuarios) }}</h3>
+                <p class="text-xs text-emerald-400 font-semibold mt-1 flex items-center gap-1">
+                    <span>✓ Sincronizados</span>
+                    <span class="text-gray-400 font-normal">no banco</span>
+                </p>
             </div>
-
-            <!-- Dados do Administrador -->
-            <div class="text-right font-mono text-xs text-gray-400 shrink-0">
-                <div>Administrador: <strong class="text-white">{{ auth()->user()->name }}</strong></div>
-                <div class="text-yellow-400 font-bold mt-0.5">NIP: {{ auth()->user()->nip }}</div>
-                <div class="text-gray-500 text-[11px] mt-1">ComForS - CLTI</div>
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-700 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
             </div>
         </div>
+
+        <!-- Card 2: Módulos Operacionais -->
+        <div class="p-5 rounded-2xl bg-[#060f1d]/90 backdrop-blur-md border border-gray-800/80 shadow-xl flex items-center justify-between hover:border-yellow-500/50 transition-all group">
+            <div>
+                <p class="text-[11px] font-mono uppercase font-bold tracking-wider text-gray-400">Módulos Ativos</p>
+                <h3 class="text-2xl font-bold text-white mt-1 group-hover:text-yellow-400 transition-colors">02</h3>
+                <p class="text-xs text-yellow-400 font-semibold mt-1 flex items-center gap-1">
+                    <span>Lições & SIPA-SUB</span>
+                </p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-yellow-600 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-yellow-500/30">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+            </div>
+        </div>
+
+        <!-- Card 3: Sessões e Acesso -->
+        <div class="p-5 rounded-2xl bg-[#060f1d]/90 backdrop-blur-md border border-gray-800/80 shadow-xl flex items-center justify-between hover:border-purple-500/50 transition-all group">
+            <div>
+                <p class="text-[11px] font-mono uppercase font-bold tracking-wider text-gray-400">Sessões Ativas</p>
+                <h3 class="text-2xl font-bold text-white mt-1 group-hover:text-purple-400 transition-colors">01</h3>
+                <p class="text-xs text-purple-400 font-semibold mt-1 flex items-center gap-1">
+                    <span>Criptografia Ativa</span>
+                </p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-700 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/30">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            </div>
+        </div>
+
+        <!-- Card 4: Integridade do Sistema -->
+        <div class="p-5 rounded-2xl bg-[#060f1d]/90 backdrop-blur-md border border-gray-800/80 shadow-xl flex items-center justify-between hover:border-emerald-500/50 transition-all group">
+            <div>
+                <p class="text-[11px] font-mono uppercase font-bold tracking-wider text-gray-400">Integridade</p>
+                <h3 class="text-2xl font-bold text-white mt-1 group-hover:text-emerald-400 transition-colors">100%</h3>
+                <p class="text-xs text-emerald-400 font-semibold mt-1 flex items-center gap-1">
+                    <span>Sem falhas</span>
+                </p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            </div>
+        </div>
+
     </div>
 
-    <!-- Seção de Ações Rápidas & Estatísticas -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Card 1: Lições Aprendidas -->
-        <div class="rounded-2xl p-6 shadow-xl relative overflow-hidden flex flex-col justify-between" style="background: linear-gradient(135deg, #061122 0%, #030814 100%); border: 1px solid #1e3a5f;">
+    <!-- ========================================================================= -->
+    <!-- 2. TABELA ARGON DASHBOARD PRO - CRUD COMPLETO DE USUÁRIOS/MILITARES       -->
+    <!-- ========================================================================= -->
+    <div class="p-6 rounded-2xl bg-[#060f1d]/90 backdrop-blur-md border border-gray-800/80 shadow-2xl space-y-5">
+        
+        <!-- Header da Tabela com Barra de Ferramentas -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-800/80">
             <div>
-                <span class="text-xs font-mono px-2.5 py-1 rounded-full" style="background-color: #0c1e3d; color: #60a5fa; border: 1px solid #1d4ed8;">Módulo 01</span>
-                <h3 class="text-xl font-bold mt-3 text-white uppercase" style="font-family: 'Oswald', sans-serif;">Lições Aprendidas</h3>
-                <p class="text-xs text-gray-300 mt-1.5 leading-relaxed">
-                    Repositório de fainas e doutrina tática de submarinos.
-                </p>
-            </div>
-            <div class="mt-6 pt-4 border-t border-gray-800 flex items-center justify-between">
-                <span class="text-xs font-mono text-gray-400">Acesso Total</span>
-                <a href="{{ route('licoes.dashboard') }}" class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-white transition-all shadow-lg" style="background-color: #1d4ed8;">
-                    Acessar
-                </a>
-            </div>
-        </div>
-
-        <!-- Card 2: SIPA-SUB -->
-        <div class="rounded-2xl p-6 shadow-xl relative overflow-hidden flex flex-col justify-between" style="background: linear-gradient(135deg, #181005 0%, #080501 100%); border: 1px solid #78350f;">
-            <div>
-                <span class="text-xs font-mono px-2.5 py-1 rounded-full" style="background-color: #271704; color: #fbbf24; border: 1px solid #b45309;">Módulo 02</span>
-                <h3 class="text-xl font-bold mt-3 text-white uppercase" style="font-family: 'Oswald', sans-serif;">SIPA-SUB</h3>
-                <p class="text-xs text-gray-300 mt-1.5 leading-relaxed">
-                    Investigação, relatórios RELPREV e prevenção.
-                </p>
-            </div>
-            <div class="mt-6 pt-4 border-t border-gray-800 flex items-center justify-between">
-                <span class="text-xs font-mono text-gray-400">Acesso Total</span>
-                <a href="{{ route('sipasub.dashboard') }}" class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-white transition-all shadow-lg" style="background-color: #b45309;">
-                    Acessar
-                </a>
-            </div>
-        </div>
-
-        <!-- Card 3: Botão de Novo Militar -->
-        <div class="rounded-2xl p-6 shadow-xl relative overflow-hidden flex flex-col justify-between" style="background: linear-gradient(135deg, #052e16 0%, #02120a 100%); border: 1px solid #166534;">
-            <div>
-                <span class="text-xs font-mono px-2.5 py-1 rounded-full" style="background-color: #064e3b; color: #a7f3d0; border: 1px solid #059669;">Gestão de Tripulação</span>
-                <h3 class="text-xl font-bold mt-3 text-white uppercase" style="font-family: 'Oswald', sans-serif;">Cadastrar Militar</h3>
-                <p class="text-xs text-emerald-200/80 mt-1.5 leading-relaxed">
-                    Adicionar novo NIP com perfil de acesso tático e senha inicial.
-                </p>
-            </div>
-            <div class="mt-6 pt-4 border-t border-emerald-900/60 flex items-center justify-between">
-                <span class="text-xs font-mono text-emerald-300">Novo Registro</span>
-                <button wire:click="abrirModalCriar" type="button" class="px-4 py-2 rounded-xl text-xs font-bold text-white transition-all shadow-lg hover:bg-emerald-600 flex items-center gap-1.5 cursor-pointer" style="background-color: #059669;">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                    <span>Novo Militar</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Tabela Geral de Militares e NIPs com CRUD Completo -->
-    <div class="rounded-2xl p-6 sm:p-8 shadow-xl" style="background-color: #060f1d; border: 1px solid #1f2937;">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <div>
-                <h2 class="text-xl font-bold uppercase tracking-tight text-white" style="font-family: 'Oswald', sans-serif;">
-                    Gestão Completa de Militares & Credenciais (CRUD)
+                <h2 class="text-lg font-bold text-white uppercase tracking-wide" style="font-family: 'Oswald', sans-serif;">
+                    Gestão Completa de Militares & Permissões
                 </h2>
-                <p class="text-xs text-gray-400 mt-1">
-                    Visualize, cadastre, edite ou revogue credenciais militares autorizadas no ForçaOnline.
+                <p class="text-xs text-gray-400 mt-0.5">
+                    Controle de credenciais, NIPs de acesso e atribuição tática de módulos
                 </p>
             </div>
 
-            <!-- Campo de Busca e Botão Novo -->
             <div class="flex items-center gap-3">
+                <!-- Campo de Busca em Tempo Real -->
                 <div class="relative">
-                    <input wire:model.live.debounce.250ms="busca" type="text" placeholder="Buscar por Nome, NIP ou Email..." class="w-64 sm:w-80 px-3.5 py-2 pl-9 bg-black/80 border border-gray-700 rounded-xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 font-mono shadow-inner">
-                    <svg class="w-4 h-4 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </div>
+                    <input 
+                        wire:model.live.debounce.300ms="busca"
+                        type="text" 
+                        placeholder="Buscar por NIP, nome..." 
+                        class="pl-9 pr-3 py-2 rounded-xl text-xs bg-gray-900/80 border border-gray-800 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 w-52 sm:w-64"
+                    />
                 </div>
 
-                <button wire:click="abrirModalCriar" type="button" class="px-4 py-2 rounded-xl text-xs font-bold text-white flex items-center gap-1.5 shadow-lg cursor-pointer shrink-0" style="background-color: #059669;">
+                <!-- Botão Cadastrar Novo Militar -->
+                <button 
+                    wire:click="abrirModalCriar"
+                    type="button" 
+                    class="py-2 px-3.5 rounded-xl text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-black shadow-lg shadow-yellow-500/20 transition-all flex items-center gap-2 cursor-pointer shrink-0"
+                >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                    <span class="hidden sm:inline">Adicionar</span>
+                    <span>Cadastrar Militar</span>
                 </button>
             </div>
         </div>
 
-        <div class="overflow-x-auto rounded-xl border border-gray-800">
-            <table class="w-full text-left text-sm">
+        <!-- Tabela Estilo Argon -->
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
                 <thead>
-                    <tr class="text-xs font-mono uppercase text-gray-400 border-b border-gray-800" style="background-color: #0b1526;">
-                        <th class="py-3.5 px-4">NIP</th>
-                        <th class="py-3.5 px-4">Nome do Militar</th>
-                        <th class="py-3.5 px-4">Email de Notificação</th>
-                        <th class="py-3.5 px-4">Módulo Autorizado</th>
-                        <th class="py-3.5 px-4 text-right">Ações do Comando</th>
+                    <tr class="text-gray-400 uppercase tracking-wider font-mono border-b border-gray-800/80 text-[10px]">
+                        <th class="pb-3 font-semibold">Militar / Nome</th>
+                        <th class="pb-3 font-semibold">NIP</th>
+                        <th class="pb-3 font-semibold">E-mail Cadastrado</th>
+                        <th class="pb-3 font-semibold">Módulo Liberado</th>
+                        <th class="pb-3 font-semibold text-right">Ações Operacionais</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-800 font-mono text-xs">
-                    @forelse($usuarios as $usr)
-                        <tr class="hover:bg-gray-900/60 transition-colors {{ $usr['nip'] === '09097074' ? 'bg-purple-950/20' : '' }}">
+                <tbody class="divide-y divide-gray-800/60">
+                    @forelse($usuarios as $u)
+                        <tr class="hover:bg-gray-800/30 transition-colors {{ $u['nip'] === '09097074' ? 'bg-indigo-950/20' : '' }}">
+                            <!-- Militar / Nome -->
+                            <td class="py-3.5 font-bold text-white flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold font-mono shadow-md {{ $u['nip'] === '09097074' ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-yellow-400 border border-gray-700' }}">
+                                    {{ strtoupper(substr($u['name'], 0, 2)) }}
+                                </div>
+                                <div>
+                                    <div class="text-xs font-bold text-white flex items-center gap-1.5">
+                                        <span>{{ $u['name'] }}</span>
+                                        @if($u['nip'] === '09097074')
+                                            <span class="px-1.5 py-0.5 rounded text-[9px] font-mono bg-indigo-900/60 text-indigo-300 border border-indigo-700/60">Admin</span>
+                                        @endif
+                                    </div>
+                                    <div class="text-[10px] text-gray-400 font-mono">ID #{{ $u['id'] }}</div>
+                                </div>
+                            </td>
+
                             <!-- NIP -->
-                            <td class="py-4 px-4 font-bold text-yellow-400">
-                                {{ $usr['nip'] }}
-                                @if($usr['nip'] === '09097074')
-                                    <span class="ml-1.5 px-2 py-0.5 rounded text-[10px] font-bold" style="background-color: #4338ca; color: #ffffff;">COMANDO</span>
-                                @endif
+                            <td class="py-3.5 font-mono text-sm font-bold text-yellow-400">
+                                {{ $u['nip'] }}
                             </td>
 
-                            <!-- Nome -->
-                            <td class="py-4 px-4 text-white font-sans font-semibold">
-                                {{ $usr['name'] }}
+                            <!-- E-mail -->
+                            <td class="py-3.5 font-mono text-gray-300">
+                                {{ $u['email'] }}
                             </td>
 
-                            <!-- Email -->
-                            <td class="py-4 px-4 text-gray-400">
-                                {{ $usr['email'] }}
-                            </td>
-
-                            <!-- Módulo Atual -->
-                            <td class="py-4 px-4">
-                                @if($usr['modulo_acesso'] === 'licoes_aprendidas')
-                                    <span class="px-2.5 py-1 rounded text-[11px] font-semibold" style="background-color: #0c1e3d; color: #60a5fa; border: 1px solid #1d4ed8;">
-                                        Lições Aprendidas
+                            <!-- Módulo de Acesso -->
+                            <td class="py-3.5">
+                                @if(($u['modulo_acesso'] ?? '') === 'licoes_aprendidas')
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-blue-950/60 text-blue-300 border border-blue-800/60">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                                        <span>Lições Aprendidas</span>
                                     </span>
-                                @elseif($usr['modulo_acesso'] === 'sipa_sub')
-                                    <span class="px-2.5 py-1 rounded text-[11px] font-semibold" style="background-color: #271704; color: #fbbf24; border: 1px solid #b45309;">
-                                        SIPA-SUB
+                                @elseif(($u['modulo_acesso'] ?? '') === 'sipa_sub')
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-amber-950/60 text-amber-300 border border-amber-800/60">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                                        <span>SIPA-SUB</span>
+                                    </span>
+                                @elseif(($u['modulo_acesso'] ?? '') === 'ambos')
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-emerald-950/60 text-emerald-300 border border-emerald-800/60">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                        <span>Ambos os Módulos</span>
                                     </span>
                                 @else
-                                    <span class="px-2.5 py-1 rounded text-[11px] font-semibold" style="background-color: #1e1b4b; color: #a5b4fc; border: 1px solid #4338ca;">
-                                        Ambos os Módulos
-                                    </span>
+                                    <span class="text-gray-500 font-mono text-[10px]">Não definido</span>
                                 @endif
                             </td>
 
-                            <!-- Ações CRUD (Editar, Excluir, Chavear) -->
-                            <td class="py-4 px-4 text-right">
-                                <div class="inline-flex items-center gap-2">
-                                    <!-- Botão Editar -->
-                                    <button wire:click="abrirModalEditar({{ $usr['id'] }})" title="Editar Militar" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-blue-300 hover:text-white hover:bg-blue-900/60 border border-blue-800/80 transition-all flex items-center gap-1 cursor-pointer" style="background-color: #0c1e3d;">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                        <span>Editar</span>
-                                    </button>
+                            <!-- Ações -->
+                            <td class="py-3.5 text-right space-x-2">
+                                <button 
+                                    wire:click="abrirModalEditar({{ $u['id'] }})"
+                                    type="button" 
+                                    class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 transition-colors cursor-pointer"
+                                    title="Editar dados e redefinir senha"
+                                >
+                                    Editar
+                                </button>
 
-                                    <!-- Botão Excluir (exceto o próprio usuário de comando) -->
-                                    @if($usr['nip'] !== '09097074')
-                                        <button wire:click="confirmarExclusao({{ $usr['id'] }})" title="Excluir Militar" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-red-300 hover:text-white hover:bg-red-900/60 border border-red-800/80 transition-all flex items-center gap-1 cursor-pointer" style="background-color: #450a0a;">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                            <span>Excluir</span>
-                                        </button>
-                                    @else
-                                        <span class="text-[11px] text-gray-500 italic px-2">Protegido</span>
-                                    @endif
-                                </div>
+                                @if($u['nip'] !== '09097074')
+                                    <button 
+                                        wire:click="confirmarExclusao({{ $u['id'] }})"
+                                        type="button" 
+                                        class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-red-950/40 hover:bg-red-900/60 text-red-300 border border-red-800/60 transition-colors cursor-pointer"
+                                        title="Revogar credencial e excluir militar"
+                                    >
+                                        Excluir
+                                    </button>
+                                @endif
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="py-8 text-center text-gray-500 font-mono text-xs">
-                                Nenhum militar encontrado para os critérios informados.
+                            <td colspan="5" class="py-8 text-center text-gray-400 font-mono text-xs">
+                                Nenhum militar localizado com os critérios informados.
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
+
+        <div class="pt-3 border-t border-gray-800/60 flex items-center justify-between text-xs text-gray-400 font-mono">
+            <span>Total de registros: {{ count($usuarios) }} militar(es)</span>
+            <span>ComForS - Controle Tático</span>
+        </div>
     </div>
 
-    <!-- MODAL DE CADASTRO / EDIÇÃO DE MILITAR -->
+    <!-- ========================================================================= -->
+    <!-- 3. MODAL DE CADASTRO / EDIÇÃO DE MILITAR                                  -->
+    <!-- ========================================================================= -->
     @if($modalAberto)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fade-in">
-            <div class="w-full max-w-lg rounded-2xl p-6 sm:p-8 shadow-2xl relative border border-gray-700" style="background-color: #0b1526;">
-                <div class="flex items-center justify-between pb-4 border-b border-gray-800 mb-6">
+        <div class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-[#060f1d] border border-gray-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-5 animate-fade-in">
+                
+                <div class="flex items-center justify-between pb-3 border-b border-gray-800">
                     <div>
-                        <h3 class="text-xl font-bold uppercase tracking-tight text-white" style="font-family: 'Oswald', sans-serif;">
-                            {{ $isEdicao ? 'Editar Militar Cadastrado' : 'Cadastrar Novo Militar' }}
+                        <h3 class="text-base font-bold text-white uppercase tracking-wide" style="font-family: 'Oswald', sans-serif;">
+                            {{ $isEdicao ? 'Editar Credencial do Militar' : 'Cadastrar Novo Militar na ForçaOnline' }}
                         </h3>
                         <p class="text-xs text-gray-400 mt-0.5">
-                            Preencha as informações militares e o módulo de acesso autorizado.
+                            {{ $isEdicao ? 'Atualize as permissões ou defina uma nova senha' : 'O NIP de 8 dígitos será a chave de acesso exclusivo do militar' }}
                         </p>
                     </div>
-                    <button wire:click="fecharModal" type="button" class="text-gray-400 hover:text-white cursor-pointer p-1">
+                    <button wire:click="fecharModal" class="text-gray-400 hover:text-white p-1 rounded-lg">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
 
-                <form wire:submit="salvarUsuario" class="space-y-4 font-sans">
-                    <!-- Nome Completo -->
+                <form wire:submit="salvarUsuario" class="space-y-4">
+                    
+                    <!-- Nome Completo / Posto / Graduação -->
                     <div>
-                        <label class="block text-xs font-mono text-gray-300 mb-1" for="name">Nome Completo do Militar</label>
-                        <input wire:model="name" id="name" type="text" required placeholder="Ex: 1º TEN SILVA" class="w-full px-3.5 py-2.5 bg-black/80 border border-gray-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500">
-                        <x-input-error :messages="$errors->get('name')" class="mt-1 text-xs text-red-400" />
+                        <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1 font-mono">Nome / Posto / Graduação</label>
+                        <input 
+                            wire:model="name"
+                            type="text" 
+                            required
+                            placeholder="Ex: 1º Tenente Silva"
+                            class="w-full px-3.5 py-2.5 rounded-xl text-xs bg-gray-900 border border-gray-700 text-white focus:outline-none focus:border-yellow-500"
+                        />
+                        @error('name') <span class="text-[11px] text-red-400 mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
-                    <!-- NIP e Email em 2 colunas -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-mono text-gray-300 mb-1" for="nip">NIP (8 dígitos numéricos)</label>
-                            <input wire:model="nip" id="nip" type="text" maxlength="8" inputmode="numeric" required placeholder="00000000" class="w-full px-3.5 py-2.5 bg-black/80 border border-gray-700 rounded-xl text-white text-sm font-mono tracking-widest focus:outline-none focus:border-blue-500">
-                            <x-input-error :messages="$errors->get('nip')" class="mt-1 text-xs text-red-400" />
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-mono text-gray-300 mb-1" for="email">E-mail de Notificação</label>
-                            <input wire:model="email" id="email" type="email" required placeholder="militar@marinha.mil.br" class="w-full px-3.5 py-2.5 bg-black/80 border border-gray-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500">
-                            <x-input-error :messages="$errors->get('email')" class="mt-1 text-xs text-red-400" />
-                        </div>
+                    <!-- NIP de 8 dígitos -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1 font-mono">NIP (8 Dígitos Numéricos)</label>
+                        <input 
+                            wire:model="nip"
+                            type="text" 
+                            maxlength="8"
+                            inputmode="numeric"
+                            required
+                            placeholder="Ex: 12345678"
+                            class="w-full px-3.5 py-2.5 rounded-xl text-xs bg-gray-900 border border-gray-700 text-white font-mono text-yellow-400 font-bold focus:outline-none focus:border-yellow-500"
+                            x-on:input="$event.target.value = $event.target.value.replace(/\D/g, '').slice(0, 8)"
+                        />
+                        @error('nip') <span class="text-[11px] text-red-400 mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
-                    <!-- Módulo Autorizado -->
+                    <!-- E-mail -->
                     <div>
-                        <label class="block text-xs font-mono text-gray-300 mb-1" for="modulo_acesso">Módulo de Acesso Autorizado</label>
-                        <select wire:model="modulo_acesso" id="modulo_acesso" class="w-full px-3.5 py-2.5 bg-black/80 border border-gray-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500">
-                            <option value="licoes_aprendidas">Lições Aprendidas (Apenas Função 1)</option>
-                            <option value="sipa_sub">SIPA-SUB (Apenas Função 2)</option>
-                            <option value="ambos">Ambos os Módulos (Escolha no Login)</option>
+                        <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1 font-mono">E-mail Operacional</label>
+                        <input 
+                            wire:model="email"
+                            type="email" 
+                            required
+                            placeholder="militar@marinha.mil.br"
+                            class="w-full px-3.5 py-2.5 rounded-xl text-xs bg-gray-900 border border-gray-700 text-white focus:outline-none focus:border-yellow-500"
+                        />
+                        @error('email') <span class="text-[11px] text-red-400 mt-1 block">{{ $message }}</span> @enderror
+                    </div>
+
+                    <!-- Módulo de Acesso -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1 font-mono">Permissão de Módulo</label>
+                        <select 
+                            wire:model="modulo_acesso"
+                            class="w-full px-3.5 py-2.5 rounded-xl text-xs bg-gray-900 border border-gray-700 text-white focus:outline-none focus:border-yellow-500"
+                        >
+                            <option value="licoes_aprendidas">Lições Aprendidas (Apenas Módulo 01)</option>
+                            <option value="sipa_sub">SIPA-SUB (Apenas Módulo 02)</option>
+                            <option value="ambos">Ambos os Módulos (Requer relogin para alternar)</option>
                         </select>
-                        <x-input-error :messages="$errors->get('modulo_acesso')" class="mt-1 text-xs text-red-400" />
+                        @error('modulo_acesso') <span class="text-[11px] text-red-400 mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
-                    <!-- Senha e Confirmação de Senha -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    <!-- Senha -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                         <div>
-                            <label class="block text-xs font-mono text-gray-300 mb-1" for="password">
-                                Senha de Acesso {{ $isEdicao ? '(Em branco para manter)' : '' }}
+                            <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1 font-mono">
+                                {{ $isEdicao ? 'Nova Senha (opcional)' : 'Senha de Acesso' }}
                             </label>
-                            <input wire:model="password" id="password" type="password" {{ $isEdicao ? '' : 'required' }} placeholder="Mínimo 6 caracteres" class="w-full px-3.5 py-2.5 bg-black/80 border border-gray-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500 font-mono">
-                            <x-input-error :messages="$errors->get('password')" class="mt-1 text-xs text-red-400" />
+                            <input 
+                                wire:model="password"
+                                type="password" 
+                                {{ $isEdicao ? '' : 'required' }}
+                                placeholder="Mínimo 6 caracteres"
+                                class="w-full px-3.5 py-2.5 rounded-xl text-xs bg-gray-900 border border-gray-700 text-white focus:outline-none focus:border-yellow-500"
+                            />
+                            @error('password') <span class="text-[11px] text-red-400 mt-1 block">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
-                            <label class="block text-xs font-mono text-gray-300 mb-1" for="password_confirmation">Confirmar Senha</label>
-                            <input wire:model="password_confirmation" id="password_confirmation" type="password" {{ $isEdicao ? '' : 'required' }} placeholder="Repita a senha" class="w-full px-3.5 py-2.5 bg-black/80 border border-gray-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500 font-mono">
+                            <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1 font-mono">Confirmar Senha</label>
+                            <input 
+                                wire:model="password_confirmation"
+                                type="password" 
+                                {{ $isEdicao ? '' : 'required' }}
+                                placeholder="Repita a senha"
+                                class="w-full px-3.5 py-2.5 rounded-xl text-xs bg-gray-900 border border-gray-700 text-white focus:outline-none focus:border-yellow-500"
+                            />
                         </div>
                     </div>
 
-                    <!-- Botões de Ação do Modal -->
-                    <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-800">
-                        <button wire:click="fecharModal" type="button" class="px-4 py-2.5 rounded-xl text-xs font-semibold text-gray-400 hover:text-white border border-gray-700 transition-colors cursor-pointer">
+                    <!-- Botões de Ação -->
+                    <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-800">
+                        <button 
+                            type="button" 
+                            wire:click="fecharModal"
+                            class="px-4 py-2 rounded-xl text-xs font-semibold text-gray-300 hover:text-white bg-gray-800 hover:bg-gray-700 transition-colors"
+                        >
                             Cancelar
                         </button>
-                        <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-bold text-white shadow-lg transition-all transform hover:-translate-y-0.5 cursor-pointer" style="background-color: #059669;">
-                            {{ $isEdicao ? 'Salvar Alterações' : 'Cadastrar Militar' }}
+                        <button 
+                            type="submit" 
+                            class="px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-black shadow-lg shadow-yellow-500/20 transition-all cursor-pointer"
+                        >
+                            {{ $isEdicao ? 'Salvar Alterações' : 'Confirmar Cadastro' }}
                         </button>
                     </div>
+
                 </form>
+
             </div>
         </div>
     @endif
 
-    <!-- MODAL DE CONFIRMAÇÃO DE EXCLUSÃO -->
+    <!-- ========================================================================= -->
+    <!-- 4. MODAL DE CONFIRMAÇÃO DE EXCLUSÃO                                       -->
+    <!-- ========================================================================= -->
     @if($modalExclusaoAberto)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fade-in">
-            <div class="w-full max-w-md rounded-2xl p-6 sm:p-8 shadow-2xl relative border border-red-900" style="background-color: #1a0808;">
+        <div class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-[#060f1d] border border-red-800/80 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4 animate-fade-in">
+                <div class="w-12 h-12 rounded-2xl bg-red-950/80 border border-red-800/60 flex items-center justify-center text-red-400 mx-auto">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                </div>
+
                 <div class="text-center">
-                    <div class="w-12 h-12 rounded-full mx-auto flex items-center justify-center mb-4" style="background-color: #450a0a; border: 1px solid #991b1b;">
-                        <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                    </div>
-
-                    <h3 class="text-lg font-bold text-white uppercase tracking-tight" style="font-family: 'Oswald', sans-serif;">
-                        Revogar Credencial Militar?
+                    <h3 class="text-base font-bold text-white uppercase tracking-wide" style="font-family: 'Oswald', sans-serif;">
+                        Revogar Credencial Operacional?
                     </h3>
-
-                    <p class="text-xs text-gray-300 mt-2 leading-relaxed">
-                        Tem certeza que deseja revogar o acesso e excluir os registros do militar <strong class="text-white">{{ $usuarioParaExcluirNome }}</strong>? Esta ação é irreversível.
+                    <p class="text-xs text-gray-300 mt-2">
+                        Você está prestes a excluir permanentemente o militar <strong class="text-white">{{ $usuarioParaExcluirNome }}</strong>.
                     </p>
+                    <p class="text-[11px] text-red-400 mt-1 font-mono">
+                        Esta ação revoga imediatamente o acesso ao sistema ForçaOnline.
+                    </p>
+                </div>
 
-                    <div class="flex items-center justify-center gap-3 mt-6">
-                        <button wire:click="$set('modalExclusaoAberto', false)" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold text-gray-400 hover:text-white border border-gray-700 cursor-pointer">
-                            Cancelar
-                        </button>
-                        <button wire:click="excluirUsuario" type="button" class="px-5 py-2 rounded-xl text-xs font-bold text-white shadow-lg cursor-pointer" style="background-color: #dc2626;">
-                            Confirmar Exclusão
-                        </button>
-                    </div>
+                <div class="flex items-center justify-center gap-3 pt-3 border-t border-gray-800">
+                    <button 
+                        type="button" 
+                        wire:click="$set('modalExclusaoAberto', false)"
+                        class="px-4 py-2 rounded-xl text-xs font-semibold text-gray-300 hover:text-white bg-gray-800 hover:bg-gray-700 transition-colors"
+                    >
+                        Cancelar
+                    </button>
+                    <button 
+                        type="button" 
+                        wire:click="excluirUsuario"
+                        class="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-600/30 transition-all cursor-pointer"
+                    >
+                        Confirmar Exclusão
+                    </button>
                 </div>
             </div>
         </div>
