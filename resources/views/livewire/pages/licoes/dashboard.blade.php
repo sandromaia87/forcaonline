@@ -5,7 +5,23 @@ use Livewire\Volt\Component;
 
 new #[Layout('layouts.app')] class extends Component
 {
-    //
+    public function mount(): void
+    {
+        $user = auth()->user();
+
+        // 1. Verifica permissão de acesso ao módulo
+        if (! $user || ! $user->temAcessoAoModulo('licoes_aprendidas')) {
+            abort(403, 'Acesso não autorizado ao módulo de Lições Aprendidas.');
+        }
+
+        // 2. Isolamento de sessão: não pode trocar de módulo sem deslogar
+        if (session('modulo_ativo') && session('modulo_ativo') !== 'licoes_aprendidas') {
+            $this->redirectRoute('sipasub.dashboard');
+            return;
+        }
+
+        session(['modulo_ativo' => 'licoes_aprendidas']);
+    }
 }; ?>
 
 <div class="py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto select-none">
