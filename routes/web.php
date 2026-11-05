@@ -49,7 +49,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Grupo SIPA-SUB
     Route::prefix('sipa-sub')->name('sipasub.')->group(function () {
-        Volt::route('/dashboard', 'pages.sipa.dashboard')->name('dashboard');
+        Volt::route('/dashboard', 'pages.sipa.dashboard')->name('dashboards');
     });
 
 });
