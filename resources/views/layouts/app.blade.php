@@ -10,7 +10,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
-
+    
     <!-- Google Fonts Militares (Oswald, Bebas Neue, Montserrat) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -41,21 +41,21 @@
 
             <!-- Page Heading Opcional -->
             @if (isset($header))
-                <header class="lg:pl-64 xl:pl-72 border-b border-gray-800/60 bg-[#060f1d]/60 backdrop-blur-md">
-                    <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+                <header class="lg:ml-64 xl:ml-72 border-b border-gray-800/60 bg-[#060f1d]/60 backdrop-blur-md px-6 sm:px-8 lg:px-10 py-4">
+                    <div class="max-w-7xl mx-auto">
                         {{ $header }}
                     </div>
                 </header>
             @endif
 
-            <!-- Área de Conteúdo Principal (Alinhada com a Sidenav Lateral) -->
-            <main class="lg:pl-64 xl:pl-72 flex-1 pb-12">
+            <!-- Área de Conteúdo Principal (Alinhada com a Sidenav Lateral com espacamento generoso) -->
+            <main class="lg:ml-64 xl:ml-72 flex-1 px-6 sm:px-8 lg:px-10 py-8 pb-16">
                 {{ $slot }}
             </main>
         </div>
 
         <!-- Rodapé Institucional Permanente Padrão ComForS -->
-        <footer class="lg:pl-64 xl:pl-72 border-t border-gray-800/80 py-4 px-6 text-xs text-gray-400 font-mono bg-[#030712]/90 backdrop-blur-md">
+        <footer class="lg:ml-64 xl:ml-72 border-t border-gray-800/80 px-6 sm:px-8 lg:px-10 py-4 text-xs text-gray-400 font-mono bg-[#030712]/90 backdrop-blur-md">
             <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
                 <span class="text-gray-400">
                     ComForS - CLTI • “USQUE AD SUB ACQUAM NAUTA SUM”
@@ -67,5 +67,6 @@
         </footer>
 
     </div>
+
 </body>
 </html>

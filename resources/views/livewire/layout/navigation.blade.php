@@ -98,7 +98,7 @@ new class extends Component
     <!-- ========================================================================= -->
     <!-- 2. TOP NAVBAR ARGON DASHBOARD (STICKY, COM BREADCRUMB E PERFIL)           -->
     <!-- ========================================================================= -->
-    <header class="lg:pl-64 xl:pl-72 sticky top-0 z-30 bg-[#030712]/80 backdrop-blur-md border-b border-gray-800/80 px-4 sm:px-6 lg:px-8 py-3.5 transition-all">
+    <header class="lg:ml-64 xl:ml-72 sticky top-0 z-30 bg-[#030712]/80 backdrop-blur-md border-b border-gray-800/80 px-6 sm:px-8 lg:px-10 py-4 transition-all">
         <div class="flex items-center justify-between gap-4">
             
             <!-- Esquerda: Botão Menu Mobile & Breadcrumbs Estilo Argon -->

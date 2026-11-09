@@ -24,7 +24,7 @@ new #[Layout('layouts.app')] class extends Component
     }
 }; ?>
 
-<div class="px-4 sm:px-6 lg:px-8 py-8 max-w-6xl mx-auto select-none">
+<div class="max-w-6xl mx-auto select-none">
     
     <!-- Painel Oficial de Boas-Vindas no Padrão Argon Dashboard -->
     <div class="rounded-2xl p-6 sm:p-10 shadow-2xl relative overflow-hidden bg-gradient-to-br from-[#061122] via-[#040b17] to-[#02060e] border border-blue-900/40">
