@@ -8,18 +8,22 @@ Volt::route('/', 'pages.auth.login')->name('login')->middleware('guest');
 
 // Rotas autenticadas dos módulos
 Route::middleware(['auth', 'verified'])->group(function () {
+
     // Redirecionador inteligente para o dashboard do módulo ativo
     Route::get('/dashboard', function () {
         $user = auth()->user();
+
         if ($user && $user->nip === '09097074') {
             session(['modulo_ativo' => 'sys_ops_k7']);
             return redirect()->route('sys.ops.k7');
         }
 
         $modulo = session('modulo_ativo');
+
         if ($modulo === 'sipa_sub') {
             return redirect()->route('sipasub.dashboard');
         }
+
         if ($modulo === 'licoes_aprendidas') {
             return redirect()->route('licoes.dashboard');
         }
@@ -41,11 +45,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Grupo Lições Aprendidas
     Route::prefix('licoes-aprendidas')->name('licoes.')->group(function () {
         Volt::route('/dashboard', 'pages.licoes.dashboard')->name('dashboard');
+        Volt::route('/nova', 'pages.licoes.nova')->name('nova');
     });
 
     // Grupo SIPA-SUB
     Route::prefix('sipa-sub')->name('sipasub.')->group(function () {
-        Volt::route('/dashboard', 'pages.sipa.dashboard')->name('dashboards');
+        Volt::route('/dashboard', 'pages.sipa.dashboard')->name('dashboard');
     });
 
     // Painel do Militar / Gerenciamento da Conta

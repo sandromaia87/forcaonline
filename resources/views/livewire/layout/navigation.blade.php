@@ -17,6 +17,7 @@ new class extends Component
 }; ?>
 
 <div x-data="{ sidebarOpen: false }">
+
     <!-- ========================================================================= -->
     <!-- 1. ARGON DASHBOARD SIDENAV (LATERAL FIXA)                                 -->
     <!-- ========================================================================= -->
@@ -52,13 +53,23 @@ new class extends Component
                     Navegação
                 </div>
 
-                <!-- Item Início / Dashboard Específico do Módulo Ativo -->
+                <!-- Módulo Lições Aprendidas: Início e Nova Lição -->
                 @if(session('modulo_ativo') === 'licoes_aprendidas' || request()->routeIs('licoes.*'))
-                    <a href="{{ route('licoes.dashboard') }}" wire:navigate class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('licoes.*') ? 'bg-gradient-to-r from-blue-900/60 to-blue-800/40 text-white border border-blue-600/40 shadow-lg shadow-blue-950/50' : 'text-gray-400 hover:text-white hover:bg-gray-900/60' }}">
-                        <div class="w-8 h-8 rounded-lg {{ request()->routeIs('licoes.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'bg-gray-800 text-gray-400' }} flex items-center justify-center">
+                    <a href="{{ route('licoes.dashboard') }}" wire:navigate class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('licoes.dashboard') ? 'bg-gradient-to-r from-blue-900/60 to-blue-800/40 text-white border border-blue-600/40 shadow-lg shadow-blue-950/50' : 'text-gray-400 hover:text-white hover:bg-gray-900/60' }}">
+                        <div class="w-8 h-8 rounded-lg {{ request()->routeIs('licoes.dashboard') ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'bg-gray-800 text-gray-400' }} flex items-center justify-center">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                         </div>
                         <span>Início / Boas-Vindas</span>
+                    </a>
+
+                    <!-- Botão Nova Lição no Sidebar -->
+                    <a href="{{ route('licoes.nova') }}" wire:navigate class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('licoes.nova') ? 'bg-gradient-to-r from-blue-900/60 to-blue-800/40 text-white border border-blue-600/40 shadow-lg shadow-blue-950/50' : 'text-gray-400 hover:text-white hover:bg-gray-900/60' }}">
+                        <div class="w-8 h-8 rounded-lg {{ request()->routeIs('licoes.nova') ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'bg-gray-800 text-gray-400' }} flex items-center justify-center">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                        </div>
+                        <span>Nova Lição</span>
                     </a>
                 @elseif(session('modulo_ativo') === 'sipa_sub' || request()->routeIs('sipasub.*'))
                     <a href="{{ route('sipasub.dashboard') }}" wire:navigate class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('sipasub.*') ? 'bg-gradient-to-r from-amber-900/60 to-amber-800/40 text-white border border-amber-600/40 shadow-lg shadow-amber-950/50' : 'text-gray-400 hover:text-white hover:bg-gray-900/60' }}">
@@ -95,6 +106,14 @@ new class extends Component
         </div>
     </aside>
 
+    <!-- Backdrop escuro para mobile -->
+    <div 
+        x-show="sidebarOpen" 
+        @click="sidebarOpen = false" 
+        class="fixed inset-0 z-40 bg-black/80 lg:hidden backdrop-blur-sm"
+        style="display: none;"
+    ></div>
+
     <!-- ========================================================================= -->
     <!-- 2. TOP NAVBAR ARGON DASHBOARD (STICKY, COM BREADCRUMB E PERFIL)           -->
     <!-- ========================================================================= -->
@@ -114,6 +133,10 @@ new class extends Component
                         <span>/</span>
                         @if(request()->routeIs('profile'))
                             <span class="text-yellow-400 font-medium">Minha Conta</span>
+                        @elseif(request()->routeIs('licoes.nova'))
+                            <a href="{{ route('licoes.dashboard') }}" wire:navigate class="hover:underline">Lições Aprendidas</a>
+                            <span>/</span>
+                            <span class="text-blue-400 font-medium">Nova Lição</span>
                         @elseif(request()->routeIs('licoes.*'))
                             <span class="text-blue-400 font-medium">Lições Aprendidas</span>
                         @elseif(request()->routeIs('sipasub.*'))
@@ -122,10 +145,13 @@ new class extends Component
                             <span class="text-indigo-400 font-medium">Console Central</span>
                         @endif
                     </div>
+
                     <!-- Título Atual -->
                     <h1 class="text-sm sm:text-base font-bold text-white tracking-wide" style="font-family: 'Oswald', sans-serif;">
                         @if(request()->routeIs('profile'))
                             PAINEL DO MILITAR / MINHA CONTA
+                        @elseif(request()->routeIs('licoes.nova'))
+                            CADASTRAR NOVA LIÇÃO APRENDIDA
                         @elseif(request()->routeIs('licoes.*'))
                             MÓDULO LIÇÕES APRENDIDAS
                         @elseif(request()->routeIs('sipasub.*'))
@@ -219,4 +245,5 @@ new class extends Component
 
         </div>
     </header>
+
 </div>
