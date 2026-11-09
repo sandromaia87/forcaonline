@@ -21,10 +21,14 @@ new class extends Component
             $validated = $this->validate([
                 'current_password' => ['required', 'string', 'current_password'],
                 'password' => ['required', 'string', Password::defaults(), 'confirmed'],
+            ], [
+                'current_password.required' => 'Informe a sua senha atual.',
+                'current_password.current_password' => 'A senha atual informada está incorreta.',
+                'password.required' => 'Informe a nova senha.',
+                'password.confirmed' => 'A confirmação da nova senha não confere.',
             ]);
         } catch (ValidationException $e) {
             $this->reset('current_password', 'password', 'password_confirmation');
-
             throw $e;
         }
 
@@ -39,40 +43,74 @@ new class extends Component
 }; ?>
 
 <section>
-    <header>
-        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-            {{ __('Update Password') }}
+    <header class="pb-4 border-b border-gray-800/80 mb-6">
+        <h2 class="text-base font-bold text-white uppercase tracking-wide" style="font-family: 'Oswald', sans-serif;">
+            Segurança & Senha Militar
         </h2>
-
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            {{ __('Ensure your account is using a long, random password to stay secure.') }}
+        <p class="mt-1 text-xs text-gray-400">
+            Mantenha sua senha segura para garantir a integridade do seu acesso operacional ao ComForS.
         </p>
     </header>
 
-    <form wire:submit="updatePassword" class="mt-6 space-y-6">
+    <form wire:submit="updatePassword" class="space-y-4">
         <div>
-            <x-input-label for="update_password_current_password" :value="__('Current Password')" />
-            <x-text-input wire:model="current_password" id="update_password_current_password" name="current_password" type="password" class="mt-1 block w-full" autocomplete="current-password" />
-            <x-input-error :messages="$errors->get('current_password')" class="mt-2" />
+            <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1 font-mono">
+                Senha Atual
+            </label>
+            <input 
+                wire:model="current_password" 
+                id="update_password_current_password" 
+                type="password" 
+                class="w-full px-3.5 py-2.5 rounded-xl text-xs bg-gray-900 border border-gray-700 text-white focus:outline-none focus:border-yellow-500 font-mono" 
+                autocomplete="current-password" 
+            />
+            @error('current_password') <span class="text-[11px] text-red-400 mt-1 block">{{ $message }}</span> @enderror
         </div>
 
-        <div>
-            <x-input-label for="update_password_password" :value="__('New Password')" />
-            <x-text-input wire:model="password" id="update_password_password" name="password" type="password" class="mt-1 block w-full" autocomplete="new-password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1 font-mono">
+                    Nova Senha
+                </label>
+                <input 
+                    wire:model="password" 
+                    id="update_password_password" 
+                    type="password" 
+                    class="w-full px-3.5 py-2.5 rounded-xl text-xs bg-gray-900 border border-gray-700 text-white focus:outline-none focus:border-yellow-500 font-mono" 
+                    autocomplete="new-password" 
+                />
+                @error('password') <span class="text-[11px] text-red-400 mt-1 block">{{ $message }}</span> @enderror
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1 font-mono">
+                    Confirmar Nova Senha
+                </label>
+                <input 
+                    wire:model="password_confirmation" 
+                    id="update_password_password_confirmation" 
+                    type="password" 
+                    class="w-full px-3.5 py-2.5 rounded-xl text-xs bg-gray-900 border border-gray-700 text-white focus:outline-none focus:border-yellow-500 font-mono" 
+                    autocomplete="new-password" 
+                />
+                @error('password_confirmation') <span class="text-[11px] text-red-400 mt-1 block">{{ $message }}</span> @enderror
+            </div>
         </div>
 
-        <div>
-            <x-input-label for="update_password_password_confirmation" :value="__('Confirm Password')" />
-            <x-text-input wire:model="password_confirmation" id="update_password_password_confirmation" name="password_confirmation" type="password" class="mt-1 block w-full" autocomplete="new-password" />
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-        </div>
+        <div class="flex items-center gap-4 pt-2">
+            <button 
+                type="submit" 
+                class="px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-black shadow-lg shadow-yellow-500/20 transition-all cursor-pointer"
+            >
+                Atualizar Senha
+            </button>
 
-        <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('Save') }}</x-primary-button>
+            <span wire:loading wire:target="updatePassword" class="text-xs text-gray-400 font-mono">
+                Processando...
+            </span>
 
-            <x-action-message class="me-3" on="password-updated">
-                {{ __('Saved.') }}
+            <x-action-message class="text-xs text-emerald-400 font-mono font-semibold" on="password-updated">
+                ✓ Senha militar atualizada com sucesso.
             </x-action-message>
         </div>
     </form>

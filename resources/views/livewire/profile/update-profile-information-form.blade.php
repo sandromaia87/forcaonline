@@ -30,6 +30,11 @@ new class extends Component
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($user->id)],
+        ], [
+            'name.required' => 'Informe o nome completo ou de guerra.',
+            'email.required' => 'Informe o e-mail militar.',
+            'email.email' => 'Informe um endereço de e-mail válido.',
+            'email.unique' => 'Este e-mail já está em uso por outro militar.',
         ]);
 
         $user->fill($validated);
@@ -42,73 +47,80 @@ new class extends Component
 
         $this->dispatch('profile-updated', name: $user->name);
     }
-
-    /**
-     * Send an email verification notification to the current user.
-     */
-    public function sendVerification(): void
-    {
-        $user = Auth::user();
-
-        if ($user->hasVerifiedEmail()) {
-            $this->redirectIntended(default: route('dashboard', absolute: false));
-
-            return;
-        }
-
-        $user->sendEmailVerificationNotification();
-
-        Session::flash('status', 'verification-link-sent');
-    }
 }; ?>
 
 <section>
-    <header>
-        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-            {{ __('Profile Information') }}
+    <header class="pb-4 border-b border-gray-800/80 mb-6">
+        <h2 class="text-base font-bold text-white uppercase tracking-wide" style="font-family: 'Oswald', sans-serif;">
+            Dados Pessoais e Operacionais
         </h2>
-
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            {{ __("Update your account's profile information and email address.") }}
+        <p class="mt-1 text-xs text-gray-400">
+            Atualize seu nome de guerra e endereço de e-mail cadastrado na Força.
         </p>
     </header>
 
-    <form wire:submit="updateProfileInformation" class="mt-6 space-y-6">
+    <form wire:submit="updateProfileInformation" class="space-y-4">
+        <!-- NIP Militar (Fixo) -->
         <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input wire:model="name" id="name" name="name" type="text" class="mt-1 block w-full" required autofocus autocomplete="name" />
-            <x-input-error class="mt-2" :messages="$errors->get('name')" />
+            <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1 font-mono">
+                NIP Militar (Número de Inscrição do Pessoal)
+            </label>
+            <input 
+                type="text" 
+                disabled 
+                value="{{ auth()->user()->nip }}" 
+                class="w-full px-3.5 py-2.5 rounded-xl text-xs bg-gray-900/60 border border-gray-800 text-yellow-400 font-mono font-bold tracking-widest cursor-not-allowed"
+            />
+            <span class="text-[10px] text-gray-500 font-mono mt-1 block">O NIP é a chave primária de identificação militar e não pode ser alterado.</span>
         </div>
 
+        <!-- Nome / Posto / Graduação -->
         <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input wire:model="email" id="email" name="email" type="email" class="mt-1 block w-full" required autocomplete="username" />
-            <x-input-error class="mt-2" :messages="$errors->get('email')" />
-
-            @if (auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! auth()->user()->hasVerifiedEmail())
-                <div>
-                    <p class="text-sm mt-2 text-gray-800 dark:text-gray-200">
-                        {{ __('Your email address is unverified.') }}
-
-                        <button wire:click.prevent="sendVerification" class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
-                            {{ __('Click here to re-send the verification email.') }}
-                        </button>
-                    </p>
-
-                    @if (session('status') === 'verification-link-sent')
-                        <p class="mt-2 font-medium text-sm text-green-600 dark:text-green-400">
-                            {{ __('A new verification link has been sent to your email address.') }}
-                        </p>
-                    @endif
-                </div>
-            @endif
+            <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1 font-mono">
+                Nome de Guerra / Posto / Graduação
+            </label>
+            <input 
+                wire:model="name" 
+                id="name" 
+                type="text" 
+                class="w-full px-3.5 py-2.5 rounded-xl text-xs bg-gray-900 border border-gray-700 text-white focus:outline-none focus:border-yellow-500 font-mono" 
+                required 
+                autofocus 
+                autocomplete="name" 
+            />
+            @error('name') <span class="text-[11px] text-red-400 mt-1 block">{{ $message }}</span> @enderror
         </div>
 
-        <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('Save') }}</x-primary-button>
+        <!-- E-mail Operacional -->
+        <div>
+            <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1 font-mono">
+                E-mail Operacional
+            </label>
+            <input 
+                wire:model="email" 
+                id="email" 
+                type="email" 
+                class="w-full px-3.5 py-2.5 rounded-xl text-xs bg-gray-900 border border-gray-700 text-white focus:outline-none focus:border-yellow-500 font-mono" 
+                required 
+                autocomplete="username" 
+            />
+            @error('email') <span class="text-[11px] text-red-400 mt-1 block">{{ $message }}</span> @enderror
+        </div>
 
-            <x-action-message class="me-3" on="profile-updated">
-                {{ __('Saved.') }}
+        <div class="flex items-center gap-4 pt-2">
+            <button 
+                type="submit" 
+                class="px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-600 hover:to-blue-400 text-white shadow-lg shadow-blue-900/30 transition-all cursor-pointer"
+            >
+                Salvar Alterações
+            </button>
+
+            <span wire:loading wire:target="updateProfileInformation" class="text-xs text-gray-400 font-mono">
+                Salvando dados...
+            </span>
+
+            <x-action-message class="text-xs text-emerald-400 font-mono font-semibold" on="profile-updated">
+                ✓ Dados atualizados com sucesso.
             </x-action-message>
         </div>
     </form>
