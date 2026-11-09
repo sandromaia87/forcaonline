@@ -75,14 +75,6 @@ new class extends Component
                         <span>Gestão de Militares</span>
                     </a>
                 @endif
-
-                <!-- Link Minha Conta / Painel do Militar -->
-                <a href="{{ route('profile') }}" wire:navigate class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('profile') ? 'bg-gradient-to-r from-gray-800 to-gray-700 text-white border border-gray-600 shadow-md' : 'text-gray-400 hover:text-white hover:bg-gray-900/60' }}">
-                    <div class="w-8 h-8 rounded-lg {{ request()->routeIs('profile') ? 'bg-yellow-500 text-black shadow-md' : 'bg-gray-800 text-yellow-400' }} flex items-center justify-center">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                    </div>
-                    <span>Minha Conta</span>
-                </a>
             </nav>
         </div>
 
@@ -147,32 +139,82 @@ new class extends Component
                 </div>
             </div>
 
-            <!-- Direita: Identificação do Militar + Botão Sair -->
-            <div class="flex items-center gap-3 sm:gap-4">
-                
-                <!-- Perfil do Militar Conectado (Clicável para ir a Minha Conta) -->
-                <a href="{{ route('profile') }}" wire:navigate class="flex items-center gap-2.5 pl-2 hover:opacity-85 transition-opacity cursor-pointer group" title="Acessar Minha Conta">
+            <!-- Direita: Perfil do Militar com Dropdown Interativo (Minha Conta & Sair) -->
+            <div class="relative" x-data="{ userDropdownOpen: false }" @click.outside="userDropdownOpen = false">
+                <!-- Botão Trigger do Dropdown -->
+                <button 
+                    @click="userDropdownOpen = !userDropdownOpen" 
+                    type="button" 
+                    class="flex items-center gap-2.5 pl-2 py-1.5 pr-3 rounded-xl bg-gray-950/60 border border-gray-800/80 hover:border-yellow-500/40 hover:bg-gray-900 transition-all cursor-pointer group text-left"
+                    title="Menu da Conta Militar"
+                >
                     <div class="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-500 to-amber-600 flex items-center justify-center text-black font-bold text-xs shadow-md group-hover:scale-105 transition-transform">
                         {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                     </div>
                     <div class="hidden sm:block text-left">
-                        <div class="text-xs font-bold text-white leading-tight truncate max-w-[140px] group-hover:text-yellow-400 transition-colors">{{ auth()->user()->name }}</div>
+                        <div class="text-xs font-bold text-white leading-tight truncate max-w-[140px] group-hover:text-yellow-400 transition-colors">
+                            {{ auth()->user()->name }}
+                        </div>
                         <div class="text-[10px] font-mono text-gray-400 leading-tight">
                             NIP: <span class="text-yellow-400 font-bold">{{ auth()->user()->nip }}</span>
                         </div>
                     </div>
-                </a>
-
-                <!-- Botão Sair Obrigatório (Isolamento estrito entre módulos) -->
-                <button 
-                    wire:click="logout" 
-                    type="button" 
-                    title="Para trocar de módulo, é necessário sair e autenticar novamente" 
-                    class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer flex items-center gap-1.5 shadow-md bg-red-950/40 hover:bg-red-900/60 text-red-300 border border-red-800/80 hover:border-red-600"
-                >
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                    <span class="hidden sm:inline">Sair</span>
+                    <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-yellow-400 transition-transform duration-200" :class="{ 'rotate-180': userDropdownOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
                 </button>
+
+                <!-- Menu Dropdown Suspenso Estilo Argon -->
+                <div 
+                    x-show="userDropdownOpen" 
+                    x-transition:enter="transition ease-out duration-150"
+                    x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
+                    x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                    x-transition:leave="transition ease-in duration-100"
+                    x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                    x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
+                    class="absolute right-0 mt-2 w-56 rounded-2xl bg-[#060f1d] border border-gray-800 shadow-2xl py-2 z-50 text-xs font-mono"
+                    style="display: none;"
+                >
+                    <!-- Identificação do Militar no Topo do Dropdown -->
+                    <div class="px-4 py-2.5 border-b border-gray-800/80">
+                        <span class="text-[10px] uppercase text-gray-400 block font-semibold">Identificação Militar</span>
+                        <div class="text-white font-bold truncate">{{ auth()->user()->name }}</div>
+                        <div class="text-[11px] text-yellow-400 font-bold mt-0.5">NIP: {{ auth()->user()->nip }}</div>
+                    </div>
+
+                    <!-- Opção Minha Conta -->
+                    <div class="py-1">
+                        <a 
+                            href="{{ route('profile') }}" 
+                            wire:navigate 
+                            @click="userDropdownOpen = false"
+                            class="flex items-center gap-2.5 px-4 py-2.5 text-gray-300 hover:text-white hover:bg-white/5 transition-colors cursor-pointer group"
+                        >
+                            <svg class="w-4 h-4 text-yellow-400 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
+                            <span>Minha Conta</span>
+                        </a>
+                    </div>
+
+                    <!-- Divisor -->
+                    <div class="border-t border-gray-800/80 my-1"></div>
+
+                    <!-- Opção Sair com Isolamento Estrito -->
+                    <div class="py-1">
+                        <button 
+                            wire:click="logout" 
+                            type="button" 
+                            class="w-full flex items-center gap-2.5 px-4 py-2 text-red-400 hover:text-red-300 hover:bg-red-950/30 transition-colors text-left cursor-pointer"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                            </svg>
+                            <span>Sair do Sistema</span>
+                        </button>
+                    </div>
+                </div>
             </div>
 
         </div>

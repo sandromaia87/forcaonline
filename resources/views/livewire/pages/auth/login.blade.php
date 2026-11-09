@@ -78,10 +78,12 @@ new #[Layout('layouts.auth')] class extends Component
     public function login()
     {
         $this->validate(['password' => 'required|string']);
+
         $this->ensureIsNotRateLimited();
 
         if (! Auth::attempt(['nip' => $this->nip, 'password' => $this->password], $this->remember)) {
             RateLimiter::hit($this->throttleKey());
+
             throw ValidationException::withMessages([
                 'password' => 'A senha informada está incorreta.',
             ]);
@@ -117,6 +119,7 @@ new #[Layout('layouts.auth')] class extends Component
         }
 
         $seconds = RateLimiter::availableIn($this->throttleKey());
+
         throw ValidationException::withMessages([
             'nip' => "Muitas tentativas. Tente novamente em {$seconds} segundos.",
         ]);
@@ -129,22 +132,22 @@ new #[Layout('layouts.auth')] class extends Component
 }; ?>
 
 <div class="min-h-screen flex w-full bg-black text-white relative overflow-hidden select-none">
+    
     <!-- Background Submarino Cobrindo Toda a Tela com Fusão Suave -->
     <div class="absolute inset-0 z-0">
         <div class="w-full h-full bg-cover bg-right lg:bg-center" style="background-image: url('{{ asset('img/submarino.webp') }}');"></div>
-
         <!-- Degradê lateral: base preta para o formulário, mas quase transparente na direita -->
         <div class="absolute inset-0 bg-gradient-to-r from-black via-black/80 sm:via-black/70 md:via-black/40 lg:via-black/10 to-transparent"></div>
-
         <!-- Vinheta vertical leve (escurece apenas o rodapé e sutilmente o topo) -->
         <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30"></div>
     </div>
 
     <!-- Lado Esquerdo: Formulário de Autenticação -->
     <div class="w-full lg:w-5/12 xl:w-4/12 flex flex-col justify-between px-6 sm:px-12 lg:px-14 xl:px-16 py-8 sm:py-10 relative z-10 bg-black/70 lg:bg-transparent backdrop-blur-[2px] lg:backdrop-blur-none min-h-screen">
+        
         <div class="w-full max-w-md mx-auto my-auto">
             <!-- Cabeçalho com Logo e Nome -->
-            <div class="mb-8 sm:mb-10 flex items-center gap-5">
+            <div class="mb-6 sm:mb-8 flex items-center gap-5">
                 <img src="{{ asset('img/brasao_0.png') }}" alt="Brasão ComForS" class="h-20 sm:h-24 w-auto drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)]">
                 <div>
                     <h1 class="text-4xl sm:text-5xl font-bold tracking-tight uppercase leading-none" style="font-family: 'Oswald', sans-serif;">
@@ -152,6 +155,21 @@ new #[Layout('layouts.auth')] class extends Component
                     </h1>
                     <p class="text-xs sm:text-sm text-gray-300/80 mt-2">Acesso restrito a militares e pessoal autorizado.</p>
                 </div>
+            </div>
+
+            <!-- Indicador Tático de Passos da Autenticação -->
+            <div class="flex items-center gap-2 mb-6 text-xs font-mono">
+                <span class="px-2.5 py-1 rounded-lg border transition-all {{ $step === 1 ? 'bg-blue-950/80 text-blue-300 border-blue-600 font-bold' : 'bg-black/50 text-gray-500 border-gray-800' }}">
+                    1. NIP
+                </span>
+                <span class="text-gray-600">/</span>
+                <span class="px-2.5 py-1 rounded-lg border transition-all {{ $step === 2 ? 'bg-yellow-950/80 text-yellow-300 border-yellow-600 font-bold' : 'bg-black/50 text-gray-500 border-gray-800' }}">
+                    2. Módulo
+                </span>
+                <span class="text-gray-600">/</span>
+                <span class="px-2.5 py-1 rounded-lg border transition-all {{ $step === 3 ? 'bg-emerald-950/80 text-emerald-300 border-emerald-600 font-bold' : 'bg-black/50 text-gray-500 border-gray-800' }}">
+                    3. Senha
+                </span>
             </div>
 
             <x-auth-session-status class="mb-4" :status="session('status')" />
@@ -178,7 +196,7 @@ new #[Layout('layouts.auth')] class extends Component
             @if($step === 2)
                 <div class="space-y-4 animate-fade-in">
                     <p class="text-sm text-gray-300 mb-3">Selecione o módulo que deseja acessar:</p>
-
+                    
                     @foreach($sistemasDisponiveis as $chave => $nome)
                         <button wire:click="escolherSistema('{{ $chave }}')" type="button" class="w-full flex items-center justify-between px-5 py-4 bg-black/80 border border-gray-700/80 rounded-xl hover:border-blue-500 hover:bg-blue-950/40 transition-all group shadow-lg">
                             <span class="font-semibold text-gray-200 group-hover:text-white">{{ $nome }}</span>
@@ -229,7 +247,7 @@ new #[Layout('layouts.auth')] class extends Component
             <div class="mt-12 sm:mt-14 pt-6 border-t border-gray-800/80 text-center lg:text-left">
                 <span class="text-xl font-bold tracking-wider text-yellow-500" style="font-family: 'Oswald', sans-serif;">ComForS - CLTI</span>
                 <p class="text-xs text-gray-400 mt-1 font-mono">“USQUE AD SUB ACQUAM NAUTA SUM”</p>
-
+                
                 <!-- Assinatura Permanente e Irremovível do Desenvolvedor -->
                 <div class="mt-4 pt-3 border-t border-gray-900 flex items-center justify-between text-[11px] text-gray-400 font-mono">
                     <span class="tracking-wide">
@@ -238,7 +256,9 @@ new #[Layout('layouts.auth')] class extends Component
                     <span class="text-[10px] text-yellow-500/80 uppercase font-semibold">ComForS</span>
                 </div>
             </div>
+
         </div>
+
     </div>
 
     <!-- Lado Direito: Card Flutuante Sobre a Classe do Submarino -->
@@ -249,15 +269,16 @@ new #[Layout('layouts.auth')] class extends Component
                 <span>Comando da Força de Submarinos</span>
             </div>
             <h3 class="text-xl font-bold text-white tracking-wide uppercase" style="font-family: 'Oswald', sans-serif;">
-                Submarinos Classe Riachuelo (S-BR) & Classe Tupi
+                Submarinos Classe Riachuelo (S-BR), Classe Tupi & Classe Tikuna
             </h3>
             <p class="text-xs text-gray-300 leading-relaxed mt-1.5">
                 Plataforma digital integrada de conhecimento tático, doutrina operacional e segurança de imersão da Esquadra Brasileira na Base de Submarinos da Ilha da Madeira (BSIM).
             </p>
             <div class="mt-4 pt-3 border-t border-gray-800 flex items-center justify-between text-[11px] text-gray-400 font-mono">
-                <span>S-40 • S-41 • S-42 • S-43</span>
+                <span class="text-yellow-400/90 font-medium">S30 • S34 • S40 • S41 • S42 • S43 • S44</span>
                 <span>Itaguaí - RJ</span>
             </div>
         </div>
     </div>
+
 </div>
