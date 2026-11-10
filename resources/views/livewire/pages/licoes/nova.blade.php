@@ -5,6 +5,11 @@ use Livewire\Volt\Component;
 
 new #[Layout('layouts.app')] class extends Component
 {
+    // Listas dinâmicas que iniciam vazias conforme especificado
+    public array $meios_navais = [];
+    public array $sistemas = [];
+
+    // Dados do formulário
     public string $submarino = '';
     public string $grau_sigilo = 'RESERVADO';
     public string $sistema = '';
@@ -13,6 +18,14 @@ new #[Layout('layouts.app')] class extends Component
     public string $relato = '';
     public string $recomendacao = '';
     public bool $salvo = false;
+
+    // Controle inline de adição de novo meio naval
+    public bool $adicionando_meio = false;
+    public string $novo_meio = '';
+
+    // Controle inline de adição de novo subsistema
+    public bool $adicionando_sistema = false;
+    public string $novo_sistema = '';
 
     public function mount(): void
     {
@@ -23,6 +36,74 @@ new #[Layout('layouts.app')] class extends Component
 
         session(['modulo_ativo' => 'licoes_aprendidas']);
         $this->data_ocorrencia = date('Y-m-d');
+
+        // Carrega da sessão se houver inclusões prévias na navegação, senão inicia estritamente vazio
+        $this->meios_navais = session('licoes_meios_navais', []);
+        $this->sistemas = session('licoes_sistemas', []);
+    }
+
+    public function abrirNovoMeio(): void
+    {
+        $this->adicionando_meio = true;
+        $this->novo_meio = '';
+    }
+
+    public function cancelarNovoMeio(): void
+    {
+        $this->adicionando_meio = false;
+        $this->novo_meio = '';
+    }
+
+    public function adicionarMeio(): void
+    {
+        $this->validate([
+            'novo_meio' => 'required|min:2|max:100',
+        ], [
+            'novo_meio.required' => 'Digite a identificação do novo meio naval ou OM.',
+            'novo_meio.min' => 'A identificação deve ter pelo menos 2 caracteres.',
+        ]);
+
+        $item = trim($this->novo_meio);
+        if (! in_array($item, $this->meios_navais)) {
+            $this->meios_navais[] = $item;
+            session(['licoes_meios_navais' => $this->meios_navais]);
+        }
+
+        $this->submarino = $item;
+        $this->adicionando_meio = false;
+        $this->novo_meio = '';
+    }
+
+    public function abrirNovoSistema(): void
+    {
+        $this->adicionando_sistema = true;
+        $this->novo_sistema = '';
+    }
+
+    public function cancelarNovoSistema(): void
+    {
+        $this->adicionando_sistema = false;
+        $this->novo_sistema = '';
+    }
+
+    public function adicionarSistema(): void
+    {
+        $this->validate([
+            'novo_sistema' => 'required|min:2|max:150',
+        ], [
+            'novo_sistema.required' => 'Digite a descrição do novo subsistema.',
+            'novo_sistema.min' => 'O subsistema deve ter pelo menos 2 caracteres.',
+        ]);
+
+        $item = trim($this->novo_sistema);
+        if (! in_array($item, $this->sistemas)) {
+            $this->sistemas[] = $item;
+            session(['licoes_sistemas' => $this->sistemas]);
+        }
+
+        $this->sistema = $item;
+        $this->adicionando_sistema = false;
+        $this->novo_sistema = '';
     }
 
     public function salvar(): void
@@ -35,9 +116,9 @@ new #[Layout('layouts.app')] class extends Component
             'relato' => 'required|min:10',
             'recomendacao' => 'required|min:10',
         ], [
-            'submarino.required' => 'Selecione o submarino ou OM correspondente.',
+            'submarino.required' => 'Selecione ou adicione o meio naval correspondente.',
             'grau_sigilo.required' => 'Indique o grau de sigilo doutrinário.',
-            'sistema.required' => 'Selecione o subsistema operacional afetado.',
+            'sistema.required' => 'Selecione ou adicione o subsistema operacional afetado.',
             'titulo.required' => 'Informe o título da lição aprendida.',
             'relato.required' => 'Descreva detalhadamente a ocorrência operacional ou técnica.',
             'recomendacao.required' => 'Apresente a lição doutrinária homologada para as tripulações.',
@@ -132,38 +213,72 @@ new #[Layout('layouts.app')] class extends Component
     <form wire:submit="salvar" class="rounded-2xl p-6 sm:p-8 bg-[#040a16] border border-gray-800/80 shadow-2xl space-y-6">
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <!-- 1. Submarino / Meio Naval -->
+            <!-- 1. Meio Naval / Submarino (Dinâmico com Adicionar Novo) -->
             <div>
-                <label for="submarino" class="block text-xs font-mono uppercase text-gray-300 font-semibold mb-2">
-                    Submarino / Meio Naval <span class="text-red-400">*</span>
-                </label>
-                <select 
-                    id="submarino" 
-                    wire:model="submarino" 
-                    class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition-colors"
-                >
-                    <option value="">Selecione o Submarino / OM</option>
-                    <optgroup label="Classe Tupi (IKL 209/1400)">
-                        <option value="S30">S30 - Submarino Tupi</option>
-                    </optgroup>
-                    <optgroup label="Classe Tikuna (IKL Mod)">
-                        <option value="S34">S34 - Submarino Tikuna</option>
-                    </optgroup>
-                    <optgroup label="Classe Riachuelo (Scorpène / PROSUB)">
-                        <option value="S40">S40 - Submarino Riachuelo</option>
-                        <option value="S41">S41 - Submarino Humaitá</option>
-                        <option value="S42">S42 - Submarino Tonelero</option>
-                        <option value="S43">S43 - Submarino Angostura</option>
-                    </optgroup>
-                    <optgroup label="Propulsão Nuclear">
-                        <option value="S44">S44 - Submarino Álvaro Alberto (SN-BR)</option>
-                    </optgroup>
-                    <optgroup label="Organizações Militares de Apoio">
-                        <option value="BACS">Base Almirante Castro e Silva (BACS)</option>
-                        <option value="CIAMA">Centro de Instrução Almirante Átilla Monteiro Aché (CIAMA)</option>
-                        <option value="CLTI">Centro de Liderança e TI (CLTI)</option>
-                    </optgroup>
-                </select>
+                <div class="flex items-center justify-between mb-2">
+                    <label for="submarino" class="text-xs font-mono uppercase text-gray-300 font-semibold">
+                        Meio Naval / OM <span class="text-red-400">*</span>
+                    </label>
+                    @if (! $adicionando_meio)
+                        <button 
+                            type="button" 
+                            wire:click="abrirNovoMeio" 
+                            class="inline-flex items-center gap-1 text-[11px] font-mono text-yellow-400 hover:text-yellow-300 hover:underline cursor-pointer"
+                        >
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                            <span>+ Adicionar Novo</span>
+                        </button>
+                    @endif
+                </div>
+
+                @if ($adicionando_meio)
+                    <div class="p-3 rounded-xl bg-blue-950/40 border border-blue-800/80 space-y-2.5">
+                        <div class="text-[11px] font-mono text-blue-300 font-semibold flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                            <span>Novo Meio Naval</span>
+                        </div>
+                        <input 
+                            type="text" 
+                            wire:model="novo_meio" 
+                            placeholder="Ex: S34 - Tikuna, BACS, S40..." 
+                            class="w-full bg-[#02050d] border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 font-mono"
+                        />
+                        @error('novo_meio') <span class="text-[10px] text-red-400 font-mono block">{{ $message }}</span> @enderror
+                        <div class="flex items-center gap-2">
+                            <button 
+                                type="button" 
+                                wire:click="adicionarMeio" 
+                                class="px-2.5 py-1 rounded-lg text-[11px] font-mono font-bold bg-blue-600 hover:bg-blue-500 text-white cursor-pointer"
+                            >
+                                Adicionar
+                            </button>
+                            <button 
+                                type="button" 
+                                wire:click="cancelarNovoMeio" 
+                                class="px-2.5 py-1 rounded-lg text-[11px] font-mono text-gray-400 hover:text-white bg-gray-900 border border-gray-700 cursor-pointer"
+                            >
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+                @else
+                    <select 
+                        id="submarino" 
+                        wire:model="submarino" 
+                        class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition-colors"
+                    >
+                        @if (empty($meios_navais))
+                            <option value="">Nenhum cadastrado. Clique em "+ Adicionar Novo"</option>
+                        @else
+                            <option value="">Selecione o Meio Naval / OM</option>
+                            @foreach ($meios_navais as $item)
+                                <option value="{{ $item }}">{{ $item }}</option>
+                            @endforeach
+                        @endif
+                    </select>
+                @endif
                 @error('submarino') <span class="text-[11px] text-red-400 font-mono mt-1 block">{{ $message }}</span> @enderror
             </div>
 
@@ -199,27 +314,72 @@ new #[Layout('layouts.app')] class extends Component
             </div>
         </div>
 
-        <!-- 4. Sistema ou Subsistema Naval -->
+        <!-- 4. Sistema ou Subsistema Naval (Dinâmico com Adicionar Novo) -->
         <div>
-            <label for="sistema" class="block text-xs font-mono uppercase text-gray-300 font-semibold mb-2">
-                Sistema ou Subsistema Operacional Afetado <span class="text-red-400">*</span>
-            </label>
-            <select 
-                id="sistema" 
-                wire:model="sistema" 
-                class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition-colors"
-            >
-                <option value="">Selecione o Subsistema</option>
-                <option value="propulsao">Propulsão, MCP e Motores Elétricos de Propulsão (MEP)</option>
-                <option value="imersao">Sistema de Imersão, Tanques de Lastro e Reguladores de Governo</option>
-                <option value="eletrico">Geração e Armazenamento Elétrico (Baterias de Propulsão / Quadros de Distribuição)</option>
-                <option value="sensores">Sensores Táticos, Sonar Passivo/Ativo, MAE e Periscópios</option>
-                <option value="armamento">Sistema de Armamento e Tubos de Lançamento de Torpedos (F21 / Mk 48)</option>
-                <option value="atmosfera">Atmosfera Confinada, Oxi-geradores, Purificação e Controle de Avarias (CAV)</option>
-                <option value="comunicacoes">Telecomunicações Submarinas (VLF/ELF, Satélite, Rádio HF)</option>
-                <option value="salvamento">Faina de Socorro, Escape e Salvamento Submarino</option>
-                <option value="procedimentos">Procedimentos Operacionais e Doutrina de Quarto de Manobra</option>
-            </select>
+            <div class="flex items-center justify-between mb-2">
+                <label for="sistema" class="text-xs font-mono uppercase text-gray-300 font-semibold">
+                    Sistema ou Subsistema Operacional Afetado <span class="text-red-400">*</span>
+                </label>
+                @if (! $adicionando_sistema)
+                    <button 
+                        type="button" 
+                        wire:click="abrirNovoSistema" 
+                        class="inline-flex items-center gap-1 text-[11px] font-mono text-yellow-400 hover:text-yellow-300 hover:underline cursor-pointer"
+                    >
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span>+ Adicionar Novo</span>
+                    </button>
+                @endif
+            </div>
+
+            @if ($adicionando_sistema)
+                <div class="p-3 rounded-xl bg-blue-950/40 border border-blue-800/80 space-y-2.5">
+                    <div class="text-[11px] font-mono text-blue-300 font-semibold flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                        <span>Novo Subsistema Operacional</span>
+                    </div>
+                    <input 
+                        type="text" 
+                        wire:model="novo_sistema" 
+                        placeholder="Ex: Propulsão e Motores, Sistema de Governo e Lemes, Sonar Passivo..." 
+                        class="w-full bg-[#02050d] border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 font-mono"
+                    />
+                    @error('novo_sistema') <span class="text-[10px] text-red-400 font-mono block">{{ $message }}</span> @enderror
+                    <div class="flex items-center gap-2">
+                        <button 
+                            type="button" 
+                            wire:click="adicionarSistema" 
+                            class="px-2.5 py-1 rounded-lg text-[11px] font-mono font-bold bg-blue-600 hover:bg-blue-500 text-white cursor-pointer"
+                        >
+                            Adicionar
+                        </button>
+                        <button 
+                            type="button" 
+                            wire:click="cancelarNovoSistema" 
+                            class="px-2.5 py-1 rounded-lg text-[11px] font-mono text-gray-400 hover:text-white bg-gray-900 border border-gray-700 cursor-pointer"
+                        >
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            @else
+                <select 
+                    id="sistema" 
+                    wire:model="sistema" 
+                    class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition-colors"
+                >
+                    @if (empty($sistemas))
+                        <option value="">Nenhum subsistema cadastrado. Clique em "+ Adicionar Novo"</option>
+                    @else
+                        <option value="">Selecione o Subsistema Operacional</option>
+                        @foreach ($sistemas as $item)
+                            <option value="{{ $item }}">{{ $item }}</option>
+                        @endforeach
+                    @endif
+                </select>
+            @endif
             @error('sistema') <span class="text-[11px] text-red-400 font-mono mt-1 block">{{ $message }}</span> @enderror
         </div>
 
