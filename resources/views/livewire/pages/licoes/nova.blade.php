@@ -137,43 +137,6 @@ new #[Layout('layouts.app')] class extends Component
 
 <div class="max-w-5xl mx-auto space-y-6 select-none">
 
-    <!-- Card de Cabeçalho Oficial no Padrão Argon Naval -->
-    <div class="rounded-2xl p-6 sm:p-8 bg-gradient-to-r from-[#061122] via-[#050e1b] to-[#030813] border border-blue-900/40 shadow-xl relative overflow-hidden">
-        <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div class="flex items-center gap-4">
-                <div class="w-14 h-14 rounded-2xl bg-blue-950/70 border border-blue-600/40 flex items-center justify-center shrink-0 shadow-lg">
-                    <svg class="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <div>
-                    <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wider bg-blue-950/80 text-blue-300 border border-blue-800/60 mb-1">
-                        <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span>
-                        <span>ComForS • Registro Tático & Operacional</span>
-                    </div>
-                    <h1 class="text-xl sm:text-2xl font-bold text-white tracking-wide uppercase" style="font-family: 'Oswald', sans-serif;">
-                        Cadastrar Nova Lição Aprendida
-                    </h1>
-                    <p class="text-xs text-gray-400 font-mono mt-0.5">
-                        Preservação do conhecimento doutrinário para as tripulações da Força de Submarinos
-                    </p>
-                </div>
-            </div>
-
-            <!-- Botão Retornar ao Dashboard -->
-            <a 
-                href="{{ route('licoes.dashboard') }}" 
-                wire:navigate 
-                class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-mono font-bold text-gray-300 hover:text-white bg-gray-900/80 hover:bg-gray-800 border border-gray-700/80 transition-all shrink-0 cursor-pointer"
-            >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                <span>Voltar ao Dashboard</span>
-            </a>
-        </div>
-    </div>
-
     <!-- Mensagem de Sucesso (Se Salvo) -->
     @if ($salvo)
         <div class="p-6 rounded-2xl bg-gradient-to-r from-emerald-950/80 to-[#041a12] border border-emerald-500/40 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
