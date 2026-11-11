@@ -148,6 +148,18 @@ new #[Layout('layouts.app')] class extends Component
             </select>
         </div>
 
+        <!-- Botão Guia de Preenchimento / Apoio -->
+        <button 
+            type="button" 
+            wire:click="abrirGuia" 
+            class="flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-mono font-semibold text-blue-300 bg-gray-900/90 hover:bg-gray-800 border border-blue-500/30 hover:border-blue-400/60 shadow-lg shadow-black/40 transition-all duration-200"
+        >
+            <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Guia de Preenchimento</span>
+        </button>
+
         <!-- Botão Novo Subsistema -->
         <button 
             type="button" 
@@ -341,6 +353,69 @@ new #[Layout('layouts.app')] class extends Component
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    @endif
+
+
+    <!-- Modal de Guia de Preenchimento: Sistemas & Subsistemas -->
+    @if($modalGuiaAberto)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
+            <div class="bg-[#0b1329] border border-blue-500/40 rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                <!-- Modal Header -->
+                <div class="px-6 py-4 bg-gradient-to-r from-blue-950/80 to-[#0a1226] border-b border-gray-800 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-white uppercase tracking-wider font-mono">Guia de Apoio: Sistemas & Subsistemas</h3>
+                            <p class="text-xs text-blue-400/80 font-mono">Padronização Técnica & Taxonomia Naval - ComForS</p>
+                        </div>
+                    </div>
+                    <button wire:click="fecharGuia" class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-800 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="p-6 overflow-y-auto space-y-4 text-xs font-mono text-gray-300">
+                    <div class="p-3.5 rounded-xl bg-blue-950/20 border border-blue-800/30">
+                        <span class="text-blue-300 font-bold block mb-1">TAXONOMIA OPERACIONAL</span>
+                        Esta tabela cataloga os equipamentos e subsistemas técnicos dos submarinos para permitir filtros apurados de falhas, desgastes de ciclo de vida e soluções de engenharia naval.
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="border-l-2 border-blue-500 pl-3">
+                            <p class="text-white font-bold">1. Nome do Subsistema / Equipamento</p>
+                            <p class="text-gray-400 text-[11px] mt-0.5">Nome descritivo padronizado do conjunto funcional ou equipamento. Exemplos: <span class="text-blue-300">Motores de Combustão Principal (MCP)</span>, <span class="text-blue-300">Baterias de Propulsão</span>, <span class="text-blue-300">Sonar de Flanco (FAS)</span>, <span class="text-blue-300">Sistema de Esgoto de Emergência</span>.</p>
+                        </div>
+
+                        <div class="border-l-2 border-blue-500 pl-3">
+                            <p class="text-white font-bold">2. Área Técnica / Sistema Principal</p>
+                            <p class="text-gray-400 text-[11px] mt-0.5">Macro-área de engenharia à qual o subsistema está subordinado: <span class="text-gray-200">Propulsão & Geração, Governo & Imersão, Eletricidade Naval, Sensores & Sonar, Armamento Submarino, Atmosfera & CAV, Comunicações</span>.</p>
+                        </div>
+
+                        <div class="border-l-2 border-blue-500 pl-3">
+                            <p class="text-white font-bold">3. Criticidade Operacional</p>
+                            <p class="text-gray-400 text-[11px] mt-0.5"><span class="text-red-400 font-semibold">Crítica de Segurança:</span> Falhas afetam a segurança de imersão, sobrevivência ou controle do submarino. <span class="text-amber-400 font-semibold">Operacional Essencial:</span> Afeta capacidade de combate ou cumprimento de missão primária. <span class="text-blue-400 font-semibold">Tática / Suporte:</span> Afeta redundâncias ou tarefas secundárias.</p>
+                        </div>
+
+                        <div class="border-l-2 border-blue-500 pl-3">
+                            <p class="text-white font-bold">4. Status de Homologação</p>
+                            <p class="text-gray-400 text-[11px] mt-0.5"><span class="text-green-400">Homologado:</span> Padrão em operação. <span class="text-amber-400">Em Avaliação Técnica:</span> Novo equipamento em testes de mar ou modernização.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="px-6 py-3.5 bg-gray-950/80 border-t border-gray-800 flex items-center justify-end">
+                    <button wire:click="fecharGuia" class="px-4 py-2 rounded-xl text-xs font-mono font-semibold bg-blue-600 hover:bg-blue-500 text-white transition-colors">
+                        Entendido / Fechar Guia
+                    </button>
+                </div>
             </div>
         </div>
     @endif

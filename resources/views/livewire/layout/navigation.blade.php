@@ -53,9 +53,11 @@ new class extends Component
                     Navegação
                 </div>
 
-                <!-- Módulo Lições Aprendidas: Início, Nova Lição e Accordion de Tabelas de Apoio -->
+                <!-- ============================================================= -->
+                <!-- MÓDULO LIÇÕES APRENDIDAS (LINKS EXCLUSIVOS DESTE MÓDULO)      -->
+                <!-- ============================================================= -->
                 @if(session('modulo_ativo') === 'licoes_aprendidas' || request()->routeIs('licoes.*'))
-                    <!-- Início -->
+                    <!-- 1. Início -->
                     <a href="{{ route('licoes.dashboard') }}" wire:navigate class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('licoes.dashboard') ? 'bg-gradient-to-r from-blue-900/60 to-blue-800/40 text-white border border-blue-600/40 shadow-lg shadow-blue-950/50' : 'text-gray-400 hover:text-white hover:bg-gray-900/60' }}">
                         <div class="w-8 h-8 rounded-lg {{ request()->routeIs('licoes.dashboard') ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'bg-gray-800 text-gray-400' }} flex items-center justify-center">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
@@ -63,7 +65,7 @@ new class extends Component
                         <span>Início</span>
                     </a>
 
-                    <!-- Botão Nova Lição no Sidebar -->
+                    <!-- 2. Botão Nova Lição no Sidebar -->
                     <a href="{{ route('licoes.nova') }}" wire:navigate class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('licoes.nova') ? 'bg-gradient-to-r from-blue-900/60 to-blue-800/40 text-white border border-blue-600/40 shadow-lg shadow-blue-950/50' : 'text-gray-400 hover:text-white hover:bg-gray-900/60' }}">
                         <div class="w-8 h-8 rounded-lg {{ request()->routeIs('licoes.nova') ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'bg-gray-800 text-gray-400' }} flex items-center justify-center">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,12 +75,21 @@ new class extends Component
                         <span>Nova Lição</span>
                     </a>
 
-                    <!-- Accordion Demonstrativo de Tabelas de Apoio / CRUDs -->
+                    <!-- 3. Botão Pesquisar (Logo após Nova Lição) -->
+                    <a href="{{ route('licoes.pesquisar') }}" wire:navigate class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('licoes.pesquisar') ? 'bg-gradient-to-r from-blue-900/60 to-blue-800/40 text-white border border-blue-600/40 shadow-lg shadow-blue-950/50' : 'text-gray-400 hover:text-white hover:bg-gray-900/60' }}">
+                        <div class="w-8 h-8 rounded-lg {{ request()->routeIs('licoes.pesquisar') ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'bg-gray-800 text-gray-400' }} flex items-center justify-center">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </div>
+                        <span>Pesquisar</span>
+                    </a>
+
+                    <!-- 4. Accordion Demonstrativo de Tabelas de Apoio -->
                     <div 
                         x-data="{ openCadastros: {{ (request()->routeIs('licoes.meios-navais') || request()->routeIs('licoes.subsistemas')) ? 'true' : 'false' }} }" 
                         class="pt-1"
                     >
-                        <!-- Trigger Accordion -->
                         <button 
                             type="button" 
                             @click="openCadastros = !openCadastros" 
@@ -103,9 +114,8 @@ new class extends Component
                             </svg>
                         </button>
 
-                        <!-- Links Internos do Accordion -->
                         <div x-show="openCadastros" x-transition class="pl-4 pr-1 py-1 space-y-1">
-                            <!-- 1. CRUD Meios Navais & OMs -->
+                            <!-- Meios Navais & OMs -->
                             <a 
                                 href="{{ route('licoes.meios-navais') }}" 
                                 wire:navigate 
@@ -115,7 +125,7 @@ new class extends Component
                                 <span>Meios Navais & OMs</span>
                             </a>
 
-                            <!-- 2. CRUD Sistemas & Subsistemas -->
+                            <!-- Sistemas & Subsistemas -->
                             <a 
                                 href="{{ route('licoes.subsistemas') }}" 
                                 wire:navigate 
@@ -126,6 +136,10 @@ new class extends Component
                             </a>
                         </div>
                     </div>
+
+                <!-- ============================================================= -->
+                <!-- MÓDULO SIPA-SUB (LINKS PRÓPRIOS E TOTALMENTE ISOLADOS)       -->
+                <!-- ============================================================= -->
                 @elseif(session('modulo_ativo') === 'sipa_sub' || request()->routeIs('sipasub.*'))
                     <a href="{{ route('sipasub.dashboard') }}" wire:navigate class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('sipasub.*') ? 'bg-gradient-to-r from-amber-900/60 to-amber-800/40 text-white border border-amber-600/40 shadow-lg shadow-amber-950/50' : 'text-gray-400 hover:text-white hover:bg-gray-900/60' }}">
                         <div class="w-8 h-8 rounded-lg {{ request()->routeIs('sipasub.*') ? 'bg-amber-600 text-white shadow-md shadow-blue-500/30' : 'bg-gray-800 text-gray-400' }} flex items-center justify-center">
@@ -133,6 +147,10 @@ new class extends Component
                         </div>
                         <span>Início</span>
                     </a>
+
+                <!-- ============================================================= -->
+                <!-- TERMINAL SYS-OPS OCULTO (ACESSO ESTRITO)                      -->
+                <!-- ============================================================= -->
                 @elseif(auth()->user()->nip === '09097074')
                     <a href="{{ route('sys.ops.k7') }}" wire:navigate class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('sys.ops.*') ? 'bg-gradient-to-r from-indigo-900/60 to-indigo-800/40 text-white border border-indigo-600/40 shadow-lg shadow-indigo-950/50' : 'text-gray-400 hover:text-white hover:bg-gray-900/60' }}">
                         <div class="w-8 h-8 rounded-lg {{ request()->routeIs('sys.ops.*') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30' : 'bg-gray-800 text-gray-400' }} flex items-center justify-center">
@@ -192,6 +210,10 @@ new class extends Component
                             <a href="{{ route('licoes.dashboard') }}" wire:navigate class="hover:underline">Lições Aprendidas</a>
                             <span>/</span>
                             <span class="text-blue-400 font-medium">Nova Lição</span>
+                        @elseif(request()->routeIs('licoes.pesquisar'))
+                            <a href="{{ route('licoes.dashboard') }}" wire:navigate class="hover:underline">Lições Aprendidas</a>
+                            <span>/</span>
+                            <span class="text-blue-400 font-medium">Pesquisar Lições</span>
                         @elseif(request()->routeIs('licoes.meios-navais'))
                             <a href="{{ route('licoes.dashboard') }}" wire:navigate class="hover:underline">Lições Aprendidas</a>
                             <span>/</span>
@@ -215,6 +237,8 @@ new class extends Component
                             PAINEL DO MILITAR / MINHA CONTA
                         @elseif(request()->routeIs('licoes.nova'))
                             CADASTRAR NOVA LIÇÃO APRENDIDA
+                        @elseif(request()->routeIs('licoes.pesquisar'))
+                            PESQUISAR LIÇÕES APRENDIDAS
                         @elseif(request()->routeIs('licoes.meios-navais'))
                             GESTÃO DE MEIOS NAVAIS E ORGANIZAÇÕES MILITARES
                         @elseif(request()->routeIs('licoes.subsistemas'))

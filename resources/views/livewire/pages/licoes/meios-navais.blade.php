@@ -147,6 +147,18 @@ new #[Layout('layouts.app')] class extends Component
             </select>
         </div>
 
+        <!-- Botão Guia de Preenchimento / Apoio -->
+        <button 
+            type="button" 
+            wire:click="abrirGuia" 
+            class="flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-mono font-semibold text-blue-300 bg-gray-900/90 hover:bg-gray-800 border border-blue-500/30 hover:border-blue-400/60 shadow-lg shadow-black/40 transition-all duration-200"
+        >
+            <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Guia de Preenchimento</span>
+        </button>
+
         <!-- Botão Novo Meio Naval -->
         <button 
             type="button" 
@@ -244,8 +256,26 @@ new #[Layout('layouts.app')] class extends Component
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="py-8 text-center text-gray-500 font-mono">
-                                Nenhum meio naval ou OM localizado com os filtros selecionados.
+                            <td colspan="6" class="py-12 text-center">
+                                <div class="max-w-md mx-auto space-y-3">
+                                    <div class="w-12 h-12 mx-auto rounded-xl bg-blue-950/40 border border-blue-800/40 flex items-center justify-center text-blue-400">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-sm font-semibold text-gray-200">Tabela de Meios Navais & OMs Inicia Vazia</p>
+                                    <p class="text-xs text-gray-400 font-mono leading-relaxed">
+                                        Conforme diretriz, os meios navais e organizações são adicionados sob demanda conforme a rotina operacional. Utilize o botão "+ Novo Meio Naval" ou consulte as orientações doutrinárias no "Guia de Preenchimento".
+                                    </p>
+                                    <div class="pt-2 flex items-center justify-center gap-3">
+                                        <button type="button" wire:click="abrirModalNovo" class="inline-flex items-center gap-2 px-3.5 py-1.5 text-xs font-mono font-medium rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-colors">
+                                            + Cadastrar Primeiro Meio Naval
+                                        </button>
+                                        <button type="button" wire:click="abrirGuia" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono text-gray-400 hover:text-white transition-colors">
+                                            📘 Ver Instruções
+                                        </button>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     @endforelse
@@ -355,6 +385,74 @@ new #[Layout('layouts.app')] class extends Component
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    @endif
+
+
+    <!-- Modal de Guia de Preenchimento e Orientações Doutrinárias -->
+    @if($modalGuiaAberto)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
+            <div class="bg-[#0b1329] border border-blue-500/40 rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                <!-- Modal Header -->
+                <div class="px-6 py-4 bg-gradient-to-r from-blue-950/80 to-[#0a1226] border-b border-gray-800 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-white uppercase tracking-wider font-mono">Guia de Apoio: Meios Navais & OMs</h3>
+                            <p class="text-xs text-blue-400/80 font-mono">Critérios Doutrinários de Preenchimento - ComForS</p>
+                        </div>
+                    </div>
+                    <button wire:click="fecharGuia" class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-800 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="p-6 overflow-y-auto space-y-4 text-xs font-mono text-gray-300">
+                    <div class="p-3.5 rounded-xl bg-blue-950/20 border border-blue-800/30">
+                        <span class="text-blue-300 font-bold block mb-1">FINALIDADE DO CADASTRO</span>
+                        Esta tabela de apoio padroniza a identificação dos submarinos, navios de apoio e organizações militares que originam ou são impactadas por relatórios de Lições Aprendidas.
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="border-l-2 border-blue-500 pl-3">
+                            <p class="text-white font-bold">1. Indicativo Naval (Código Operacional)</p>
+                            <p class="text-gray-400 text-[11px] mt-0.5">Utilize o indicativo oficial de casco (pennant number) ou sigla da OM. Exemplos: <span class="text-blue-300">S30</span> (Tupi), <span class="text-blue-300">S34</span> (Tikuna), <span class="text-blue-300">S40</span> (Riachuelo), <span class="text-blue-300">S41</span> (Humaitá), <span class="text-blue-300">S42</span> (Tonelero), <span class="text-blue-300">BACS</span>, <span class="text-blue-300">CIAMA</span>, <span class="text-blue-300">ComForS</span>.</p>
+                        </div>
+
+                        <div class="border-l-2 border-blue-500 pl-3">
+                            <p class="text-white font-bold">2. Nome Oficial</p>
+                            <p class="text-gray-400 text-[11px] mt-0.5">Designação completa da unidade naval ou terrestre. Exemplos: <span class="text-gray-200">Submarino Riachuelo</span>, <span class="text-gray-200">Base Almirante Castro e Silva</span>.</p>
+                        </div>
+
+                        <div class="border-l-2 border-blue-500 pl-3">
+                            <p class="text-white font-bold">3. Tipo de Unidade</p>
+                            <p class="text-gray-400 text-[11px] mt-0.5"><span class="text-blue-300">Submarino:</span> Unidades combatentes de imersão. <span class="text-blue-300">Navio de Apoio / Socorro:</span> Ex: NSS Felinto Perry. <span class="text-blue-300">Organização Militar:</span> Estabelecimentos de terra do Comando da Força.</p>
+                        </div>
+
+                        <div class="border-l-2 border-blue-500 pl-3">
+                            <p class="text-white font-bold">4. Classe / Projeto Técnico</p>
+                            <p class="text-gray-400 text-[11px] mt-0.5">Especifica a linhagem tecnológica para correlação de falhas irmãs (ex: Classe Riachuelo S-BR, Classe Tikuna, Classe Tupi 209, ou Propulsão Nuclear SN-BR).</p>
+                        </div>
+
+                        <div class="border-l-2 border-blue-500 pl-3">
+                            <p class="text-white font-bold">5. Status Operacional</p>
+                            <p class="text-gray-400 text-[11px] mt-0.5">Indica se a unidade está em operação ativa, em Período de Manutenção Geral (PMG), Período de Manutenção Regular (PMR) ou fase de construção/comissionamento.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="px-6 py-3.5 bg-gray-950/80 border-t border-gray-800 flex items-center justify-end">
+                    <button wire:click="fecharGuia" class="px-4 py-2 rounded-xl text-xs font-mono font-semibold bg-blue-600 hover:bg-blue-500 text-white transition-colors">
+                        Entendido / Fechar Guia
+                    </button>
+                </div>
             </div>
         </div>
     @endif

@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Livewire\Volt\Component;
 use Livewire\Volt\Volt;
 
 // Rota raiz aponta para o login
@@ -43,15 +42,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Volt::route('/k7-overview', 'pages.core.terminal')->name('k7');
     });
 
-    // Grupo Lições Aprendidas
+    // Grupo Lições Aprendidas (Rotas exclusivas deste módulo)
     Route::prefix('licoes-aprendidas')->name('licoes.')->group(function () {
         Volt::route('/dashboard', 'pages.licoes.dashboard')->name('dashboard');
         Volt::route('/nova', 'pages.licoes.nova')->name('nova');
+        Volt::route('/pesquisar', 'pages.licoes.pesquisar')->name('pesquisar');
         Volt::route('/meios-navais', 'pages.licoes.meios-navais')->name('meios-navais');
         Volt::route('/subsistemas', 'pages.licoes.subsistemas')->name('subsistemas');
     });
 
-    // Grupo SIPA-SUB
+    // Grupo SIPA-SUB (Isolamento estrito - links próprios deste módulo)
     Route::prefix('sipa-sub')->name('sipasub.')->group(function () {
         Volt::route('/dashboard', 'pages.sipa.dashboard')->name('dashboard');
     });
