@@ -87,7 +87,7 @@ new class extends Component
 
                     <!-- 4. Accordion Demonstrativo de Tabelas de Apoio -->
                     <div 
-                        x-data="{ openCadastros: {{ (request()->routeIs('licoes.meios-navais') || request()->routeIs('licoes.subsistemas')) ? 'true' : 'false' }} }" 
+                        x-data="{ openCadastros: {{ (request()->routeIs('licoes.meios-navais') || request()->routeIs('licoes.subsistemas') || request()->routeIs('licoes.comissoes')) ? 'true' : 'false' }} }" 
                         class="pt-1"
                     >
                         <button 
@@ -222,6 +222,10 @@ new class extends Component
                             <a href="{{ route('licoes.dashboard') }}" wire:navigate class="hover:underline">Lições Aprendidas</a>
                             <span>/</span>
                             <span class="text-blue-400 font-medium">Sistemas & Subsistemas</span>
+                        @elseif(request()->routeIs('licoes.comissoes'))
+                            <a href="{{ route('licoes.dashboard') }}" wire:navigate class="hover:underline">Lições Aprendidas</a>
+                            <span>/</span>
+                            <span class="text-blue-400 font-medium">Comissões Operacionais</span>
                         @elseif(request()->routeIs('licoes.*'))
                             <span class="text-blue-400 font-medium">Lições Aprendidas</span>
                         @elseif(request()->routeIs('sipasub.*'))
@@ -243,6 +247,8 @@ new class extends Component
                             GESTÃO DE MEIOS NAVAIS E ORGANIZAÇÕES MILITARES
                         @elseif(request()->routeIs('licoes.subsistemas'))
                             GESTÃO DE SISTEMAS E SUBSISTEMAS OPERACIONAIS
+                        @elseif(request()->routeIs('licoes.comissoes'))
+                            GESTÃO DE COMISSÕES OPERACIONAIS
                         @elseif(request()->routeIs('licoes.*'))
                             MÓDULO LIÇÕES APRENDIDAS
                         @elseif(request()->routeIs('sipasub.*'))

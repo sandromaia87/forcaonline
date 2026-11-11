@@ -49,6 +49,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Volt::route('/pesquisar', 'pages.licoes.pesquisar')->name('pesquisar');
         Volt::route('/meios-navais', 'pages.licoes.meios-navais')->name('meios-navais');
         Volt::route('/subsistemas', 'pages.licoes.subsistemas')->name('subsistemas');
+        Volt::route('/comissoes', 'pages.licoes.comissoes')->name('comissoes');
     });
 
     // Grupo SIPA-SUB (Isolamento estrito - links próprios deste módulo)

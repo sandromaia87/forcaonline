@@ -119,6 +119,32 @@ new #[Layout('layouts.app')] class extends Component
 }; ?>
 
 <div class="max-w-6xl mx-auto space-y-6 select-none">
+    <!-- Banner de Construção & Homologação Doutrinária -->
+    <div class="p-4 rounded-2xl bg-gradient-to-r from-amber-950/40 via-[#0a1424] to-[#040a16] border border-amber-500/30 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shrink-0">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-amber-400 font-mono uppercase tracking-wider">
+                        Módulo em Construção • Homologação Doutrinária
+                    </span>
+                    <span class="text-[10px] font-mono text-gray-500 bg-gray-900 px-2 py-0.5 rounded border border-gray-800">
+                        Tabela de Apoio
+                    </span>
+                </div>
+                <p class="text-[11px] text-gray-400 font-mono mt-0.5 leading-snug">
+                    Estrutura preliminar para testes operacionais. Em breve integração com a base corporativa de dados do ComForS.
+                </p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="text-[10px] font-mono text-amber-300/80 bg-amber-950/60 border border-amber-700/40 px-2.5 py-1 rounded-lg">
+                Status: Em Desenvolvimento
+            </span>
+        </div>
+    </div>
 
     <!-- Barra de Controle e Ações -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-[#040a16] border border-gray-800/80 shadow-xl">
