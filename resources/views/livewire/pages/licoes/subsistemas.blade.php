@@ -114,7 +114,7 @@ new #[Layout('layouts.app')] class extends Component
     }
 }; ?>
 
-<div class="max-w-6xl mx-auto space-y-6 select-none">
+<div class="space-y-6 select-none">
     <!-- Banner de Construção & Homologação Doutrinária -->
     <div class="p-4 rounded-2xl bg-gradient-to-r from-amber-950/40 via-[#0a1424] to-[#040a16] border border-amber-500/30 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div class="flex items-center gap-3">

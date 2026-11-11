@@ -24,7 +24,7 @@ new #[Layout('layouts.app')] class extends Component
     }
 }; ?>
 
-<div class="max-w-6xl mx-auto space-y-6 select-none">
+<div class="space-y-6 select-none">
     
     <!-- Banner de Boas-Vindas Compacto e Discreto (Padrão Argon Naval) -->
     <div class="rounded-xl px-5 py-3.5 bg-gradient-to-r from-[#061122] via-[#040b17] to-[#02060e] border border-blue-900/40 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4">
