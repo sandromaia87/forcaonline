@@ -43,7 +43,7 @@ new #[Layout('layouts.app')] class extends Component
                         Ativo
                     </span>
                 </div>
-                <p class="text-xs text-gray-400 font-mono mt-0.5">
+                <p class="text-[9px] text-gray-400 font-mono mt-0.5">
                     Comando da Força de Submarinos • ComForS
                 </p>
             </div>
