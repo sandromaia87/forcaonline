@@ -48,10 +48,18 @@ new #[Layout('layouts.app')] class extends Component
         session(['modulo_ativo' => 'licoes_aprendidas']);
         $this->data_ocorrencia = date('Y-m-d');
 
-        // Carrega das sessões de apoio (iniciam vazias se ainda não cadastradas)
-        $this->meios_navais = session('licoes_meios_navais', []);
-        $this->sistemas = session('licoes_sistemas', []);
-        $this->comissoes = session('licoes_comissoes', []);
+        // Carrega das tabelas de apoio do CRUD e das inserções dinâmicas
+        $crudMeios = array_map(fn($m) => is_array($m) ? ($m['indicativo'] . ' - ' . $m['nome']) : $m, session('crud_meios_navais', []));
+        $sessionMeios = session('licoes_meios_navais', []);
+        $this->meios_navais = array_values(array_unique(array_filter(array_merge($crudMeios, $sessionMeios))));
+
+        $crudSistemas = array_map(fn($s) => is_array($s) ? $s['nome'] : $s, session('crud_subsistemas', []));
+        $sessionSistemas = session('licoes_sistemas', []);
+        $this->sistemas = array_values(array_unique(array_filter(array_merge($crudSistemas, $sessionSistemas))));
+
+        $crudComissoes = array_map(fn($c) => is_array($c) ? ($c['codigo'] . ' - ' . $c['nome']) : $c, session('crud_comissoes', []));
+        $sessionComissoes = session('licoes_comissoes', []);
+        $this->comissoes = array_values(array_unique(array_filter(array_merge($crudComissoes, $sessionComissoes))));
 
         // Exemplos preliminares de RFCs vinculados (futuro CRUD no SIPA-SUB)
         $this->rfcs_disponiveis = [
@@ -184,6 +192,25 @@ new #[Layout('layouts.app')] class extends Component
             'relato.required' => 'Descreva detalhadamente a ocorrência operacional ou técnica.',
             'recomendacao.required' => 'Apresente a lição doutrinária homologada para as tripulações.',
         ]);
+
+        $todas = session('licoes_cadastradas', []);
+        $nova = [
+            'id' => (string) (count($todas) + 1),
+            'protocolo' => 'LA-' . date('Y') . '-' . str_pad((string)(count($todas) + 1), 4, '0', STR_PAD_LEFT),
+            'submarino' => $this->submarino,
+            'grau_sigilo' => $this->grau_sigilo,
+            'sistema' => $this->sistema,
+            'comissao' => $this->comissao,
+            'rfc' => $this->rfc_numero,
+            'data_ocorrencia' => $this->data_ocorrencia,
+            'titulo' => trim($this->titulo),
+            'relato' => trim($this->relato),
+            'recomendacao' => trim($this->recomendacao),
+            'autor' => (auth()->user()->graduacao ?? 'MILITAR') . ' ' . auth()->user()->name,
+            'nip' => auth()->user()->nip,
+        ];
+        $todas[] = $nova;
+        session(['licoes_cadastradas' => $todas]);
 
         $this->salvo = true;
     }
