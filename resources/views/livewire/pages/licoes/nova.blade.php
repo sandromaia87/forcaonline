@@ -570,7 +570,7 @@ new #[Layout('layouts.app')] class extends Component
             ></div>
 
             <!-- Drawer Deslizante da Esquerda (Left Sidebar Modal) -->
-            <aside class="fixed inset-y-0 left-0 max-w-md sm:max-w-lg w-full bg-[#040915] border-r border-blue-500/40 shadow-2xl flex flex-col z-50 animate-in slide-in-from-left duration-300">
+            <aside class="fixed inset-y-0 right-0 max-w-md sm:max-w-lg w-full bg-[#040915] border-l border-blue-500/40 shadow-2xl flex flex-col z-50 animate-in slide-in-from-right duration-300">
                 <!-- Header do Drawer -->
                 <div class="p-6 bg-gradient-to-r from-blue-950/90 to-[#040a16] border-b border-gray-800 flex items-center justify-between">
                     <div class="flex items-center gap-3">

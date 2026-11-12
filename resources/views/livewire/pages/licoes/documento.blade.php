@@ -2,32 +2,51 @@
 
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
+use Illuminate\Support\Str;
 
 new #[Layout('layouts.app')] class extends Component
 {
     // Listas dinâmicas
-    public array $tipos_documento = [];
-    public array $meios_navais = [];
-    public array $comissoes = [];
+    public array  = [];
+    public array  = [];
+    public array  = [];
 
     // Campos do formulário
-    public string $tipo_sigla = '';
-    public string $numero_gerado = '';
-    public string $submarino = '';
-    public string $comissao = '';
-    public string $grau_sigilo = 'RESERVADO';
-    public string $data_documento = '';
-    public string $titulo = '';
-    public string $ementa = '';
-    public bool $salvo = false;
+    public string  = '';
+    public string  = '';
+    public string  = '';
+    public string  = '';
+    public string  = 'RESERVADO';
+    public string  = '';
+    public string  = '';
+    public string  = '';
 
-    // Adição inline de novo tipo de documento
-    public bool $adicionandoTipo = false;
-    public string $novaSigla = '';
-    public string $novoNome = '';
+    public bool  = false;
+    public bool  = false;
 
-    // Modal de Guia
-    public bool $modalGuiaAberto = false;
+    // Right Sidebar Modal (Drawer Lateral à Direita)
+    public bool  = false;
+    public string  = ''; // 'tipo_documento' | 'meio_naval' | 'comissao'
+
+    // Campos do Drawer: Tipo de Documento
+    public string  = '';
+    public string  = '';
+    public string  = '';
+    public string  = 'Ativo';
+
+    // Campos do Drawer: Meio Naval
+    public string  = '';
+    public string  = '';
+    public string  = 'Submarino';
+    public string  = 'Classe Riachuelo (S-BR)';
+    public string  = 'Operacional';
+
+    // Campos do Drawer: Comissão
+    public string  = '';
+    public string  = '';
+    public string  = 'Adestramento de Imersão';
+    public string  = '';
+    public string  = 'Concluída';
 
     public function mount(): void
     {
@@ -35,8 +54,8 @@ new #[Layout('layouts.app')] class extends Component
         if (! $user || ! $user->temAcessoAoModulo('licoes_aprendidas')) {
             abort(403, 'Acesso não autorizado ao módulo de Lições Aprendidas.');
         }
-        session(['modulo_ativo' => 'licoes_aprendidas']);
 
+        session(['modulo_ativo' => 'licoes_aprendidas']);
         $this->data_documento = date('Y-m-d');
 
         // Carrega das tabelas de apoio
@@ -77,6 +96,13 @@ new #[Layout('layouts.app')] class extends Component
         $this->gerarNumeroUnico($value);
     }
 
+    public function updatedDataDocumento(): void
+    {
+        if ($this->tipo_sigla) {
+            $this->gerarNumeroUnico($this->tipo_sigla);
+        }
+    }
+
     public function gerarNumeroUnico(string $sigla): void
     {
         if (empty($sigla)) {
@@ -85,90 +111,195 @@ new #[Layout('layouts.app')] class extends Component
         }
 
         $docs = session('documentos_cadastrados', []);
-        // Conta quantos documentos do mesmo tipo já existem
         $doMesmoTipo = array_filter($docs, fn($d) => ($d['tipo_sigla'] ?? '') === $sigla);
         $seq = count($doMesmoTipo) + 1;
-        $ano = date('Y');
-
+        $ano = $this->data_documento ? date('Y', strtotime($this->data_documento)) : date('Y');
         $this->numero_gerado = strtoupper(trim($sigla)) . '-' . $ano . '-' . str_pad((string)$seq, 4, '0', STR_PAD_LEFT);
     }
 
-    public function salvarNovoTipo(): void
+    // Right Sidebar Drawer Methods
+    public function abrirDrawer(string $tipo): void
+    {
+        $this->drawerTipo = $tipo;
+        $this->drawerAberto = true;
+        $this->resetValidation();
+
+        if ($tipo === 'tipo_documento') {
+            $this->drawerTipoSigla = '';
+            $this->drawerTipoNome = '';
+            $this->drawerTipoDescricao = '';
+            $this->drawerTipoStatus = 'Ativo';
+        } elseif ($tipo === 'meio_naval') {
+            $this->drawerMeioIndicativo = '';
+            $this->drawerMeioNome = '';
+            $this->drawerMeioTipo = 'Submarino';
+            $this->drawerMeioClasse = 'Classe Riachuelo (S-BR)';
+            $this->drawerMeioStatus = 'Operacional';
+        } elseif ($tipo === 'comissao') {
+            $this->drawerComCodigo = '';
+            $this->drawerComNome = '';
+            $this->drawerComTipo = 'Adestramento de Imersão';
+            $this->drawerComAno = date('Y');
+            $this->drawerComStatus = 'Concluída';
+        }
+    }
+
+    public function fecharDrawer(): void
+    {
+        $this->drawerAberto = false;
+        $this->drawerTipo = '';
+        $this->resetValidation();
+    }
+
+    public function salvarDrawerTipo(): void
     {
         $this->validate([
-            'novaSigla' => ['required', 'string', 'min:2', 'max:8'],
-            'novoNome' => ['required', 'string', 'min:3', 'max:150'],
+            'drawerTipoSigla' => ['required', 'string', 'min:2', 'max:10'],
+            'drawerTipoNome' => ['required', 'string', 'min:3', 'max:150'],
         ], [
-            'novaSigla.required' => 'Informe a sigla (ex: RFC, ARFC).',
-            'novoNome.required' => 'Informe o nome por extenso.',
+            'drawerTipoSigla.required' => 'Informe a sigla (ex: RFC, ARFC).',
+            'drawerTipoNome.required' => 'Informe o nome do tipo documental.',
         ]);
 
-        $siglaFormatada = strtoupper(trim($this->novaSigla));
-        $tipos = session('crud_tipos_documento', []);
+        $siglaFormatada = strtoupper(trim($this->drawerTipoSigla));
+        $tipos = session('crud_tipos_documento', $this->tipos_documento);
+
         $novo = [
             'id' => (string) Str::uuid(),
             'sigla' => $siglaFormatada,
-            'nome' => trim($this->novoNome),
-            'descricao' => 'Criado sob demanda em Novo Documento',
-            'status' => 'Ativo',
+            'nome' => trim($this->drawerTipoNome),
+            'descricao' => trim($this->drawerTipoDescricao) ?: 'Cadastrado via painel rápido de Novo Documento',
+            'status' => $this->drawerTipoStatus,
         ];
+
         array_unshift($tipos, $novo);
         session(['crud_tipos_documento' => $tipos]);
 
         $this->carregarTipos();
         $this->tipo_sigla = $siglaFormatada;
         $this->gerarNumeroUnico($siglaFormatada);
+        $this->fecharDrawer();
+    }
 
-        $this->reset(['novaSigla', 'novoNome', 'adicionandoTipo']);
+    public function salvarDrawerMeio(): void
+    {
+        $this->validate([
+            'drawerMeioIndicativo' => 'required|min:2|max:20',
+            'drawerMeioNome' => 'required|min:3|max:100',
+        ], [
+            'drawerMeioIndicativo.required' => 'O indicativo naval é obrigatório.',
+            'drawerMeioNome.required' => 'O nome do meio naval é obrigatório.',
+        ]);
+
+        $ind = strtoupper(trim($this->drawerMeioIndicativo));
+        $nom = trim($this->drawerMeioNome);
+        $label = "{$ind} - {$nom}";
+
+        if (! in_array($label, $this->meios_navais)) {
+            $this->meios_navais[] = $label;
+            session(['licoes_meios_navais' => $this->meios_navais]);
+        }
+
+        $crud = session('crud_meios_navais', []);
+        $crud[] = [
+            'id' => (string) (count($crud) + 1),
+            'indicativo' => $ind,
+            'nome' => $nom,
+            'tipo' => $this->drawerMeioTipo,
+            'classe' => $this->drawerMeioClasse,
+            'status' => $this->drawerMeioStatus,
+        ];
+        session(['crud_meios_navais' => $crud]);
+
+        $this->submarino = $label;
+        $this->fecharDrawer();
+    }
+
+    public function salvarDrawerComissao(): void
+    {
+        $this->validate([
+            'drawerComCodigo' => 'required|min:2|max:30',
+            'drawerComNome' => 'required|min:3|max:100',
+        ], [
+            'drawerComCodigo.required' => 'O código da comissão é obrigatório.',
+            'drawerComNome.required' => 'O nome da comissão é obrigatório.',
+        ]);
+
+        $cod = strtoupper(trim($this->drawerComCodigo));
+        $nom = trim($this->drawerComNome);
+        $label = "{$cod} - {$nom}";
+
+        if (! in_array($label, $this->comissoes)) {
+            $this->comissoes[] = $label;
+            session(['licoes_comissoes' => $this->comissoes]);
+        }
+
+        $crud = session('crud_comissoes', []);
+        $crud[] = [
+            'id' => (string) (count($crud) + 1),
+            'codigo' => $cod,
+            'nome' => $nom,
+            'tipo' => $this->drawerComTipo,
+            'ano' => $this->drawerComAno ?: date('Y'),
+            'status' => $this->drawerComStatus,
+        ];
+        session(['crud_comissoes' => $crud]);
+
+        $this->comissao = $label;
+        $this->fecharDrawer();
     }
 
     public function salvar(): void
     {
         $this->validate([
             'tipo_sigla' => 'required',
-            'titulo' => ['required', 'string', 'min:5', 'max:255'],
-            'ementa' => ['required', 'string', 'min:10'],
+            'titulo' => 'required|min:5|max:255',
+            'ementa' => 'required|min:10',
+            'grau_sigilo' => 'required|in:OSTENSIVO,RESERVADO,CONFIDENCIAL,SECRETO',
         ], [
-            'tipo_sigla.required' => 'Selecione o tipo de documento para gerar o número único.',
-            'titulo.required' => 'Informe o título ou assunto principal do documento.',
-            'ementa.required' => 'Descreva a síntese ou ementa do documento (mínimo 10 caracteres).',
+            'tipo_sigla.required' => 'Selecione o tipo de documento ou adicione um novo.',
+            'titulo.required' => 'Informe o título do documento (mínimo 5 caracteres).',
+            'ementa.required' => 'Descreva suscintamente a ementa ou resumo do documento.',
         ]);
 
-        // Garante número único
-        if (empty($this->numero_gerado)) {
-            $this->gerarNumeroUnico($this->tipo_sigla);
-        }
+        $tipoEncontrado = collect($this->tipos_documento)->firstWhere('sigla', $this->tipo_sigla);
+        $nomeTipo = $tipoEncontrado['nome'] ?? $this->tipo_sigla;
 
-        $docs = session('documentos_cadastrados', []);
-        $novo = [
+        $novoDoc = [
             'id' => (string) Str::uuid(),
             'numero' => $this->numero_gerado,
             'tipo_sigla' => $this->tipo_sigla,
-            'submarino' => $this->submarino ?: 'Não especificado',
-            'comissao' => $this->comissao ?: 'Não vinculada',
+            'tipo_nome' => $nomeTipo,
+            'submarino' => $this->submarino,
+            'comissao' => $this->comissao,
             'grau_sigilo' => $this->grau_sigilo,
-            'data_documento' => $this->data_documento,
+            'data_documento' => $this->data_documento ?: date('Y-m-d'),
             'titulo' => trim($this->titulo),
             'ementa' => trim($this->ementa),
-            'autor' => (auth()->user()->graduacao ?? 'MILITAR') . ' ' . auth()->user()->name,
+            'autor' => auth()->user()->graduacao . ' ' . auth()->user()->name,
             'nip' => auth()->user()->nip,
+            'status' => 'Cadastrado',
         ];
-        array_unshift($docs, $novo);
-        session(['documentos_cadastrados' => $docs]);
+
+        $documentos = session('documentos_cadastrados', []);
+        array_unshift($documentos, $novoDoc);
+        session(['documentos_cadastrados' => $documentos]);
 
         $this->salvo = true;
     }
 
-    public function novoDocumento(): void
+    public function resetForm(): void
     {
-        $this->reset(['tipo_sigla', 'numero_gerado', 'submarino', 'comissao', 'titulo', 'ementa', 'salvo']);
+        $this->reset(['tipo_sigla', 'numero_gerado', 'submarino', 'comissao', 'titulo', 'ementa']);
         $this->grau_sigilo = 'RESERVADO';
         $this->data_documento = date('Y-m-d');
+        $this->salvo = false;
+        $this->resetValidation();
     }
 }; ?>
 
-<div class="space-y-6 select-none">
-    <!-- Banner de Construção & Homologação Doutrinária com Botão Guia -->
+<div class="space-y-6 select-none w-full">
+    <!-- Banner de Homologação & Construção -->
     <div class="p-4 rounded-2xl bg-gradient-to-r from-amber-950/40 via-[#0a1424] to-[#040a16] border border-amber-500/30 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shrink-0">
@@ -177,28 +308,30 @@ new #[Layout('layouts.app')] class extends Component
             <div>
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-bold text-amber-400 font-mono uppercase tracking-wider">
-                        Módulo em Construção • Cadastro de Documento Referência
+                        Módulo em Construção • Cadastro de Documentos
                     </span>
                     <span class="text-[10px] font-mono text-gray-500 bg-gray-900 px-2 py-0.5 rounded border border-gray-800">
-                        Documentos Técnicos
+                        Geração de Número Único
                     </span>
                 </div>
                 <p class="text-[11px] text-gray-400 font-mono mt-0.5 leading-snug">
-                    Cadastre relatórios e análises doutrinárias que servirão como referência para as Lições Aprendidas. O número único é gerado automaticamente com base na sigla.
+                    Cadastre documentos de referência que servirão de fundamentação técnica e histórica para as Lições Aprendidas.
                 </p>
             </div>
         </div>
 
-        <button
-            type="button"
-            wire:click="$set('modalGuiaAberto', true)"
-            class="flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs font-mono font-semibold text-blue-300 bg-gray-900/90 hover:bg-gray-800 border border-blue-500/30 hover:border-blue-400/60 shadow-lg shadow-black/40 transition-all cursor-pointer self-start sm:self-auto shrink-0"
-        >
-            <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>Guia de Preenchimento</span>
-        </button>
+        <div class="flex items-center gap-2 self-start sm:self-auto shrink-0">
+            <button 
+                type="button" 
+                wire:click="$set('modalGuiaAberto', true)" 
+                class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-mono font-semibold text-blue-300 bg-gray-900/90 hover:bg-gray-800 border border-blue-500/30 hover:border-blue-400/60 shadow-lg transition-all cursor-pointer"
+            >
+                <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Guia de Preenchimento</span>
+            </button>
+        </div>
     </div>
 
     <!-- Alerta de Sucesso -->
@@ -211,29 +344,24 @@ new #[Layout('layouts.app')] class extends Component
                     </svg>
                 </div>
                 <div>
-                    <div class="flex items-center gap-2">
-                        <h3 class="text-sm font-bold text-emerald-300 uppercase font-mono">
-                            Documento Referência Registrado com Sucesso!
-                        </h3>
-                        <span class="px-2 py-0.5 rounded text-xs font-mono font-bold bg-emerald-900/60 text-yellow-400 border border-emerald-600/50">
-                            {{ $numero_gerado }}
-                        </span>
-                    </div>
+                    <h3 class="text-sm font-bold text-emerald-300 uppercase font-mono">
+                        Documento Registrado com Sucesso: <span class="text-yellow-400">{{ $numero_gerado }}</span>
+                    </h3>
                     <p class="text-xs text-gray-300 mt-0.5">
-                        O documento foi catalogado e seu identificador único está ativo no repositório doutrinário do ComForS.
+                        Número único gerado e armazenado na base de referências doutrinárias do ComForS.
                     </p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                <button
-                    wire:click="novoDocumento"
-                    type="button"
+                <button 
+                    wire:click="resetForm" 
+                    type="button" 
                     class="px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold text-white bg-emerald-600 hover:bg-emerald-500 transition-colors cursor-pointer"
                 >
                     Cadastrar Outro Documento
                 </button>
-                <a
-                    href="{{ route('licoes.dashboard') }}"
+                <a 
+                    href="{{ route('dashboard') }}" 
                     wire:navigate
                     class="px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold text-gray-300 hover:text-white bg-gray-900 border border-gray-700 transition-colors cursor-pointer"
                 >
@@ -243,20 +371,20 @@ new #[Layout('layouts.app')] class extends Component
         </div>
     @endif
 
-    <!-- Formulário Principal Argon -->
+    <!-- Formulário Principal -->
     <form wire:submit="salvar" class="rounded-2xl p-6 sm:p-8 bg-[#040a16] border border-gray-800/80 shadow-2xl space-y-6">
-        <!-- Linha 1: Tipo de Documento, Número Único Gerado, Grau de Sigilo -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <!-- 1. Tipo de Documento -->
+        <!-- Linha 1: Tipo de Documento e Número Único Automático -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- Seleção do Tipo de Documento com Right Sidebar Drawer -->
             <div>
                 <div class="flex items-center justify-between mb-2">
                     <label for="tipo_sigla" class="text-xs font-mono uppercase text-gray-300 font-semibold">
                         Tipo de Documento <span class="text-red-400">*</span>
                     </label>
-                    @if (!$adicionandoTipo)
-                        <button
-                            type="button"
-                            wire:click="$set('adicionandoTipo', true)"
+                    <div class="flex items-center gap-2">
+                        <button 
+                            type="button" 
+                            wire:click="abrirDrawer('tipo_documento')" 
                             class="inline-flex items-center gap-1 text-[11px] font-mono text-yellow-400 hover:text-yellow-300 hover:underline cursor-pointer"
                         >
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -264,92 +392,118 @@ new #[Layout('layouts.app')] class extends Component
                             </svg>
                             <span>+ Novo Tipo</span>
                         </button>
-                    @endif
+                        <a 
+                            href="{{ route('tipos-documento') }}" 
+                            wire:navigate 
+                            class="text-[10px] font-mono text-blue-400 hover:underline cursor-pointer"
+                        >
+                            (Tabela de Apoio)
+                        </a>
+                    </div>
                 </div>
 
-                @if ($adicionandoTipo)
-                    <div class="p-3 rounded-xl bg-blue-950/40 border border-blue-800/80 space-y-2.5">
-                        <div class="text-[11px] font-mono text-blue-300 font-semibold flex items-center gap-1.5">
-                            <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
-                            <span>Cadastrar Novo Tipo</span>
-                        </div>
-                        <input
-                            type="text"
-                            wire:model="novaSigla"
-                            placeholder="Sigla (ex: RFC, ARFC)"
-                            class="w-full bg-[#02050d] border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white uppercase font-mono"
-                        />
-                        <input
-                            type="text"
-                            wire:model="novoNome"
-                            placeholder="Nome por extenso"
-                            class="w-full bg-[#02050d] border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white font-mono"
-                        />
-                        <div class="flex items-center gap-2">
-                            <button
-                                type="button"
-                                wire:click="salvarNovoTipo"
-                                class="px-2.5 py-1 rounded-lg text-[11px] font-mono font-bold bg-blue-600 hover:bg-blue-500 text-white cursor-pointer"
-                            >
-                                Adicionar
-                            </button>
-                            <button
-                                type="button"
-                                wire:click="$set('adicionandoTipo', false)"
-                                class="px-2.5 py-1 rounded-lg text-[11px] font-mono text-gray-400 hover:text-white bg-gray-900 border border-gray-700 cursor-pointer"
-                            >
-                                Cancelar
-                            </button>
-                        </div>
-                    </div>
-                @else
-                    <select
-                        id="tipo_sigla"
-                        wire:model.live="tipo_sigla"
-                        class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition-colors"
-                    >
-                        <option value="">Selecione o Tipo de Documento</option>
-                        @foreach ($tipos_documento as $t)
-                            <option value="{{ $t['sigla'] }}">
-                                {{ $t['sigla'] }} - {{ $t['nome'] }}
-                            </option>
-                        @endforeach
-                    </select>
-                @endif
+                <select 
+                    id="tipo_sigla" 
+                    wire:model.live="tipo_sigla" 
+                    class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition-colors"
+                >
+                    <option value="">Selecione o Tipo de Documento</option>
+                    @foreach ($tipos_documento as $td)
+                        <option value="{{ $td['sigla'] }}">
+                            [{{ $td['sigla'] }}] - {{ $td['nome'] }}
+                        </option>
+                    @endforeach
+                </select>
                 @error('tipo_sigla') <span class="text-[11px] text-red-400 font-mono mt-1 block">{{ $message }}</span> @enderror
+                <span class="text-[10px] text-gray-500 font-mono mt-1 block">
+                    A sigla define o padrão identificador único do documento militar
+                </span>
             </div>
 
-            <!-- 2. Número Único Gerado Automaticamente -->
+            <!-- Número Único Gerado Automaticamente -->
             <div>
                 <label class="block text-xs font-mono uppercase text-gray-300 font-semibold mb-2">
-                    Número Único do Documento
+                    Número Único do Documento <span class="text-yellow-400">(Automático)</span>
                 </label>
-                <div class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs font-mono flex items-center justify-between">
-                    @if (!empty($numero_gerado))
-                        <span class="text-yellow-400 font-bold text-sm tracking-wide">
-                            {{ $numero_gerado }}
-                        </span>
-                        <span class="text-[10px] text-emerald-400 bg-emerald-950/60 border border-emerald-700/40 px-2 py-0.5 rounded font-mono">
-                            ● Gerado
-                        </span>
-                    @else
-                        <span class="text-gray-500 italic">
-                            Selecione o tipo acima para gerar
-                        </span>
-                    @endif
+                <div class="flex items-center gap-3">
+                    <div class="flex-1 bg-[#02050d] border border-yellow-500/40 rounded-xl px-4 py-2.5 text-sm font-mono font-bold text-yellow-400 shadow-inner flex items-center justify-between">
+                        <span>{{ $numero_gerado ?: 'SELECIONE O TIPO AO LADO' }}</span>
+                        @if ($numero_gerado)
+                            <span class="text-[10px] bg-yellow-950 text-yellow-300 px-2 py-0.5 rounded border border-yellow-700/50 uppercase">
+                                Sequencial Oficial
+                            </span>
+                        @endif
+                    </div>
                 </div>
-                <span class="text-[10px] text-gray-500 font-mono mt-1 block">Regra: SIGLA-ANO-SEQUENCIAL</span>
+                <span class="text-[10px] text-gray-500 font-mono mt-1 block">
+                    Regra padrão ComForS: {SIGLA}-{ANO}-{SEQUENCIAL} (Ex: RFC-2026-0001, ARFC-2026-0001)
+                </span>
+            </div>
+        </div>
+
+        <!-- Linha 2: Meio Naval, Comissão, Grau de Sigilo, Data de Emissão -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+            <!-- Meio Naval / OM com Right Sidebar Drawer -->
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <label for="submarino" class="text-xs font-mono uppercase text-gray-300 font-semibold">
+                        Meio Naval / OM
+                    </label>
+                    <button 
+                        type="button" 
+                        wire:click="abrirDrawer('meio_naval')" 
+                        class="text-[11px] font-mono text-yellow-400 hover:underline cursor-pointer"
+                    >
+                        + Novo
+                    </button>
+                </div>
+                <select 
+                    id="submarino" 
+                    wire:model="submarino" 
+                    class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 font-mono"
+                >
+                    <option value="">Não informado / Geral</option>
+                    @foreach ($meios_navais as $m)
+                        <option value="{{ $m }}">{{ $m }}</option>
+                    @endforeach
+                </select>
             </div>
 
-            <!-- 3. Grau de Sigilo -->
+            <!-- Comissão Operacional com Right Sidebar Drawer -->
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <label for="comissao" class="text-xs font-mono uppercase text-gray-300 font-semibold">
+                        Comissão
+                    </label>
+                    <button 
+                        type="button" 
+                        wire:click="abrirDrawer('comissao')" 
+                        class="text-[11px] font-mono text-yellow-400 hover:underline cursor-pointer"
+                    >
+                        + Nova
+                    </button>
+                </div>
+                <select 
+                    id="comissao" 
+                    wire:model="comissao" 
+                    class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 font-mono"
+                >
+                    <option value="">Não vinculada</option>
+                    @foreach ($comissoes as $c)
+                        <option value="{{ $c }}">{{ $c }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Grau de Sigilo -->
             <div>
                 <label for="grau_sigilo" class="block text-xs font-mono uppercase text-gray-300 font-semibold mb-2">
                     Grau de Sigilo <span class="text-red-400">*</span>
                 </label>
-                <select
-                    id="grau_sigilo"
-                    wire:model="grau_sigilo"
-                    class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition-colors"
+                <select 
+                    id="grau_sigilo" 
+                    wire:model="grau_sigilo" 
+                    class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 font-mono"
                 >
                     <option value="OSTENSIVO">OSTENSIVO</option>
                     <option value="RESERVADO">RESERVADO</option>
@@ -357,86 +511,47 @@ new #[Layout('layouts.app')] class extends Component
                     <option value="SECRETO">SECRETO</option>
                 </select>
             </div>
-        </div>
 
-        <!-- Linha 2: Meio Naval / OM, Comissão Operacional, Data -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <!-- 4. Meio Naval / OM -->
-            <div>
-                <label for="submarino" class="block text-xs font-mono uppercase text-gray-300 font-semibold mb-2">
-                    Meio Naval / OM de Origem
-                </label>
-                <select
-                    id="submarino"
-                    wire:model="submarino"
-                    class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition-colors"
-                >
-                    <option value="">Não vinculado a meio específico</option>
-                    @foreach ($meios_navais as $m)
-                        <option value="{{ $m }}">{{ $m }}</option>
-                    @endforeach
-                </select>
-                <span class="text-[10px] text-gray-500 font-mono mt-1 block">Submarino ou OM que originou o documento</span>
-            </div>
-
-            <!-- 5. Comissão Operacional -->
-            <div>
-                <label for="comissao" class="block text-xs font-mono uppercase text-gray-300 font-semibold mb-2">
-                    Comissão Operacional de Referência
-                </label>
-                <select
-                    id="comissao"
-                    wire:model="comissao"
-                    class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition-colors"
-                >
-                    <option value="">Não vinculado a comissão</option>
-                    @foreach ($comissoes as $c)
-                        <option value="{{ $c }}">{{ $c }}</option>
-                    @endforeach
-                </select>
-                <span class="text-[10px] text-gray-500 font-mono mt-1 block">Missão ou faina referente ao documento</span>
-            </div>
-
-            <!-- 6. Data do Documento -->
+            <!-- Data de Emissão -->
             <div>
                 <label for="data_documento" class="block text-xs font-mono uppercase text-gray-300 font-semibold mb-2">
-                    Data de Emissão do Documento <span class="text-red-400">*</span>
+                    Data de Emissão <span class="text-red-400">*</span>
                 </label>
-                <input
-                    type="date"
-                    id="data_documento"
-                    wire:model="data_documento"
-                    class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition-colors"
+                <input 
+                    type="date" 
+                    id="data_documento" 
+                    wire:model.live="data_documento" 
+                    class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 font-mono"
                 />
             </div>
         </div>
 
-        <!-- Linha 3: Título / Objeto do Documento -->
+        <!-- Linha 3: Título do Documento -->
         <div>
             <label for="titulo" class="block text-xs font-mono uppercase text-gray-300 font-semibold mb-2">
-                Título / Objeto do Documento <span class="text-red-400">*</span>
+                Título do Documento Militar <span class="text-red-400">*</span>
             </label>
-            <input
-                type="text"
-                id="titulo"
-                wire:model="titulo"
-                placeholder="Ex: Relatório Final de Comissão da Operação Tropicalex 2026 - Submarino Tikuna"
-                class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition-colors"
+            <input 
+                type="text" 
+                id="titulo" 
+                wire:model="titulo" 
+                placeholder="Ex: Relatório Final da Comissão de Adestramento de Equipes de Manobra e Snorquel do S34" 
+                class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 font-mono"
             />
             @error('titulo') <span class="text-[11px] text-red-400 font-mono mt-1 block">{{ $message }}</span> @enderror
         </div>
 
-        <!-- Linha 4: Ementa / Resumo do Conteúdo -->
+        <!-- Linha 4: Ementa / Resumo do Documento -->
         <div>
             <label for="ementa" class="block text-xs font-mono uppercase text-gray-300 font-semibold mb-2">
-                Ementa / Resumo Descritivo do Conteúdo <span class="text-red-400">*</span>
+                Ementa / Resumo Executivo do Documento <span class="text-red-400">*</span>
             </label>
-            <textarea
-                id="ementa"
-                wire:model="ementa"
-                rows="4"
-                placeholder="Apresente a síntese dos principais fatos, resultados operacionais, manobras executadas ou pareceres constantes no documento..."
-                class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-sans leading-relaxed transition-colors"
+            <textarea 
+                id="ementa" 
+                wire:model="ementa" 
+                rows="4" 
+                placeholder="Descreva suscintamente o teor do documento, principais ocorrências operacionais relatadas, conclusões e referências normativas que servirão de embasamento para Lições Aprendidas..." 
+                class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 font-sans leading-relaxed"
             ></textarea>
             @error('ementa') <span class="text-[11px] text-red-400 font-mono mt-1 block">{{ $message }}</span> @enderror
         </div>
@@ -445,29 +560,326 @@ new #[Layout('layouts.app')] class extends Component
         <div class="pt-4 border-t border-gray-800/80 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="text-xs font-mono text-gray-400 flex items-center gap-2">
                 <span class="text-yellow-400 font-bold">* Campos obrigatórios</span>
-                <span>• Responsável pelo Registro: <strong class="text-white">{{ auth()->user()->name }}</strong> (NIP: {{ auth()->user()->nip }})</span>
+                <span>• Cadastrado por: <strong class="text-white">{{ auth()->user()->graduacao }} {{ auth()->user()->name }}</strong> (NIP: {{ auth()->user()->nip }})</span>
             </div>
 
             <div class="flex items-center gap-3 w-full sm:w-auto">
-                <a
-                    href="{{ route('licoes.dashboard') }}"
+                <a 
+                    href="{{ route('dashboard') }}" 
                     wire:navigate
                     class="w-full sm:w-auto text-center px-4 py-2.5 rounded-xl text-xs font-mono font-bold text-gray-400 hover:text-white bg-gray-900/60 hover:bg-gray-900 border border-gray-800 transition-colors cursor-pointer"
                 >
                     Cancelar
                 </a>
-                <button
-                    type="submit"
+                <button 
+                    type="submit" 
                     class="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-xs font-mono font-bold text-white bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-600 hover:to-blue-500 shadow-lg shadow-blue-900/50 border border-blue-500/40 transition-all cursor-pointer"
                 >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
                     </svg>
-                    <span>Salvar e Homologar Documento</span>
+                    <span>Registrar Documento Militar</span>
                 </button>
             </div>
         </div>
     </form>
+
+    <!-- ========================================================================= -->
+    <!-- RIGHT SIDEBAR MODAL (DRAWER LATERAL À DIREITA) ESTILO ARGON PRO           -->
+    <!-- ========================================================================= -->
+    @if ($drawerAberto)
+        <div class="fixed inset-0 z-50 overflow-hidden">
+            <!-- Backdrop escuro com blur -->
+            <div 
+                class="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity animate-in fade-in duration-200" 
+                wire:click="fecharDrawer"
+            ></div>
+
+            <!-- Drawer Deslizante da Direita (Right Sidebar Modal) -->
+            <aside class="fixed inset-y-0 right-0 max-w-md sm:max-w-lg w-full bg-[#040915] border-l border-blue-500/40 shadow-2xl flex flex-col z-50 animate-in slide-in-from-right duration-300">
+                <!-- Header do Drawer -->
+                <div class="p-6 bg-gradient-to-r from-blue-950/90 to-[#040a16] border-b border-gray-800 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/40 flex items-center justify-center text-blue-400 shrink-0">
+                            @if ($drawerTipo === 'tipo_documento')
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                            @elseif ($drawerTipo === 'meio_naval')
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                            @else
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            @endif
+                        </div>
+                        <div>
+                            <div class="text-[10px] font-mono uppercase tracking-wider text-blue-400 font-semibold">
+                                Painel de Apoio Rápido • Documentos
+                            </div>
+                            <h2 class="text-base font-bold text-white uppercase font-oswald tracking-wide">
+                                @if ($drawerTipo === 'tipo_documento')
+                                    Cadastrar Tipo de Documento
+                                @elseif ($drawerTipo === 'meio_naval')
+                                    Cadastrar Meio Naval / OM
+                                @else
+                                    Cadastrar Comissão Operacional
+                                @endif
+                            </h2>
+                        </div>
+                    </div>
+
+                    <button 
+                        type="button" 
+                        wire:click="fecharDrawer" 
+                        class="p-2 text-gray-400 hover:text-white rounded-xl hover:bg-gray-800/80 transition-colors cursor-pointer"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Conteúdo do Formulário no Drawer Lateral -->
+                <div class="p-6 overflow-y-auto flex-1 space-y-4 text-xs font-mono text-gray-300">
+                    <div class="p-3 rounded-xl bg-blue-950/30 border border-blue-800/40 text-[11px] leading-relaxed text-blue-300">
+                        Ao salvar, o registro será adicionado automaticamente à respectiva tabela de apoio e selecionado diretamente no formulário do documento militar.
+                    </div>
+
+                    <!-- CASO 1: TIPO DE DOCUMENTO -->
+                    @if ($drawerTipo === 'tipo_documento')
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-gray-300 uppercase font-semibold mb-1">
+                                    Sigla do Documento <span class="text-red-400">*</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    wire:model="drawerTipoSigla" 
+                                    placeholder="Ex: RFC, ARFC, RTE, RCI..." 
+                                    maxlength="10"
+                                    class="w-full bg-[#02050d] border border-gray-700 rounded-xl px-3.5 py-2 text-white font-mono uppercase focus:outline-none focus:border-blue-500"
+                                />
+                                @error('drawerTipoSigla') <span class="text-[10px] text-red-400 block mt-1">{{ $message }}</span> @enderror
+                                <span class="text-[10px] text-gray-500 mt-1 block">
+                                    Prefixo da numeração única: <strong class="text-yellow-400">{{ strtoupper($drawerTipoSigla ?: 'SIGLA') }}-{{ date('Y') }}-0001</strong>
+                                </span>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-300 uppercase font-semibold mb-1">
+                                    Nome do Tipo de Documento <span class="text-red-400">*</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    wire:model="drawerTipoNome" 
+                                    placeholder="Ex: Relatório Final de Comissão, Relatório de Inspeção..." 
+                                    class="w-full bg-[#02050d] border border-gray-700 rounded-xl px-3.5 py-2 text-white font-mono focus:outline-none focus:border-blue-500"
+                                />
+                                @error('drawerTipoNome') <span class="text-[10px] text-red-400 block mt-1">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-300 uppercase font-semibold mb-1">Descrição / Aplicação Doutrinária</label>
+                                <textarea 
+                                    wire:model="drawerTipoDescricao" 
+                                    rows="3" 
+                                    placeholder="Descreva a finalidade doutrinária e momentos de emissão deste documento..." 
+                                    class="w-full bg-[#02050d] border border-gray-700 rounded-xl px-3.5 py-2 text-white font-mono focus:outline-none focus:border-blue-500"
+                                ></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-300 uppercase font-semibold mb-1">Status</label>
+                                <select 
+                                    wire:model="drawerTipoStatus" 
+                                    class="w-full bg-[#02050d] border border-gray-700 rounded-xl px-3.5 py-2 text-white font-mono focus:outline-none focus:border-blue-500"
+                                >
+                                    <option value="Ativo">Ativo (Disponível para emissão)</option>
+                                    <option value="Inativo">Inativo</option>
+                                </select>
+                            </div>
+                        </div>
+
+                    <!-- CASO 2: MEIO NAVAL -->
+                    @elseif ($drawerTipo === 'meio_naval')
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-gray-300 uppercase font-semibold mb-1">
+                                    Indicativo Naval <span class="text-red-400">*</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    wire:model="drawerMeioIndicativo" 
+                                    placeholder="Ex: S34, S40, BACS, CIAMA..." 
+                                    class="w-full bg-[#02050d] border border-gray-700 rounded-xl px-3.5 py-2 text-white font-mono uppercase focus:outline-none focus:border-blue-500"
+                                />
+                                @error('drawerMeioIndicativo') <span class="text-[10px] text-red-400 block mt-1">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-300 uppercase font-semibold mb-1">
+                                    Nome do Meio / OM <span class="text-red-400">*</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    wire:model="drawerMeioNome" 
+                                    placeholder="Ex: Submarino Tikuna, Base Almirante Castro e Silva..." 
+                                    class="w-full bg-[#02050d] border border-gray-700 rounded-xl px-3.5 py-2 text-white font-mono focus:outline-none focus:border-blue-500"
+                                />
+                                @error('drawerMeioNome') <span class="text-[10px] text-red-400 block mt-1">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-300 uppercase font-semibold mb-1">Tipo do Meio</label>
+                                <select 
+                                    wire:model="drawerMeioTipo" 
+                                    class="w-full bg-[#02050d] border border-gray-700 rounded-xl px-3.5 py-2 text-white font-mono focus:outline-none focus:border-blue-500"
+                                >
+                                    <option value="Submarino">Submarino</option>
+                                    <option value="Organização Militar">Organização Militar</option>
+                                    <option value="Embarcação de Apoio">Embarcação de Apoio</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-300 uppercase font-semibold mb-1">Classe / Projeto</label>
+                                <select 
+                                    wire:model="drawerMeioClasse" 
+                                    class="w-full bg-[#02050d] border border-gray-700 rounded-xl px-3.5 py-2 text-white font-mono focus:outline-none focus:border-blue-500"
+                                >
+                                    <option value="Classe Riachuelo (S-BR)">Classe Riachuelo (S-BR)</option>
+                                    <option value="Classe Tikuna (IKL Mod)">Classe Tikuna (IKL Mod)</option>
+                                    <option value="Classe Tupi (IKL 209)">Classe Tupi (IKL 209)</option>
+                                    <option value="Propulsão Nuclear (SN-BR)">Propulsão Nuclear (SN-BR)</option>
+                                    <option value="Base Operacional">Base Operacional</option>
+                                    <option value="Centro de Instrução">Centro de Instrução</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-300 uppercase font-semibold mb-1">Status Operativo</label>
+                                <select 
+                                    wire:model="drawerMeioStatus" 
+                                    class="w-full bg-[#02050d] border border-gray-700 rounded-xl px-3.5 py-2 text-white font-mono focus:outline-none focus:border-blue-500"
+                                >
+                                    <option value="Operacional">Operacional</option>
+                                    <option value="Em Manutenção">Em Manutenção</option>
+                                    <option value="Em Construção">Em Construção</option>
+                                    <option value="Ativa">Ativa</option>
+                                </select>
+                            </div>
+                        </div>
+
+                    <!-- CASO 3: COMISSÃO OPERACIONAL -->
+                    @elseif ($drawerTipo === 'comissao')
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-gray-300 uppercase font-semibold mb-1">
+                                    Código da Comissão <span class="text-red-400">*</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    wire:model="drawerComCodigo" 
+                                    placeholder="Ex: TROPICALEX-2026, ADESTRA-S34..." 
+                                    class="w-full bg-[#02050d] border border-gray-700 rounded-xl px-3.5 py-2 text-white font-mono uppercase focus:outline-none focus:border-blue-500"
+                                />
+                                @error('drawerComCodigo') <span class="text-[10px] text-red-400 block mt-1">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-300 uppercase font-semibold mb-1">
+                                    Nome da Comissão / Missão <span class="text-red-400">*</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    wire:model="drawerComNome" 
+                                    placeholder="Ex: Operação Tropicalex, Adestramento de Equipe..." 
+                                    class="w-full bg-[#02050d] border border-gray-700 rounded-xl px-3.5 py-2 text-white font-mono focus:outline-none focus:border-blue-500"
+                                />
+                                @error('drawerComNome') <span class="text-[10px] text-red-400 block mt-1">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-300 uppercase font-semibold mb-1">Tipo de Operação</label>
+                                <select 
+                                    wire:model="drawerComTipo" 
+                                    class="w-full bg-[#02050d] border border-gray-700 rounded-xl px-3.5 py-2 text-white font-mono focus:outline-none focus:border-blue-500"
+                                >
+                                    <option value="Adestramento de Imersão">Adestramento de Imersão</option>
+                                    <option value="Operação Multinacional">Operação Multinacional</option>
+                                    <option value="Patrulha de Vigilância">Patrulha de Vigilância</option>
+                                    <option value="Teste de Aceitação de Mar">Teste de Aceitação de Mar</option>
+                                </select>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-gray-300 uppercase font-semibold mb-1">Ano</label>
+                                    <input 
+                                        type="number" 
+                                        wire:model="drawerComAno" 
+                                        placeholder="2026" 
+                                        class="w-full bg-[#02050d] border border-gray-700 rounded-xl px-3.5 py-2 text-white font-mono focus:outline-none focus:border-blue-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label class="block text-gray-300 uppercase font-semibold mb-1">Status</label>
+                                    <select 
+                                        wire:model="drawerComStatus" 
+                                        class="w-full bg-[#02050d] border border-gray-700 rounded-xl px-3.5 py-2 text-white font-mono focus:outline-none focus:border-blue-500"
+                                    >
+                                        <option value="Concluída">Concluída</option>
+                                        <option value="Em Andamento">Em Andamento</option>
+                                        <option value="Planejada">Planejada</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Footer do Drawer com Ações -->
+                <div class="p-4 sm:p-6 bg-gray-950/90 border-t border-gray-800 flex items-center justify-between gap-3">
+                    <button 
+                        type="button" 
+                        wire:click="fecharDrawer" 
+                        class="px-4 py-2 rounded-xl text-xs font-mono font-bold text-gray-400 hover:text-white bg-gray-900 border border-gray-700 transition-colors cursor-pointer"
+                    >
+                        Cancelar
+                    </button>
+
+                    @if ($drawerTipo === 'tipo_documento')
+                        <button 
+                            type="button" 
+                            wire:click="salvarDrawerTipo" 
+                            class="px-5 py-2 rounded-xl text-xs font-mono font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-900/50 border border-blue-500/40 transition-all cursor-pointer"
+                        >
+                            + Salvar & Selecionar Tipo
+                        </button>
+                    @elseif ($drawerTipo === 'meio_naval')
+                        <button 
+                            type="button" 
+                            wire:click="salvarDrawerMeio" 
+                            class="px-5 py-2 rounded-xl text-xs font-mono font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-900/50 border border-blue-500/40 transition-all cursor-pointer"
+                        >
+                            + Salvar & Selecionar Meio
+                        </button>
+                    @elseif ($drawerTipo === 'comissao')
+                        <button 
+                            type="button" 
+                            wire:click="salvarDrawerComissao" 
+                            class="px-5 py-2 rounded-xl text-xs font-mono font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-900/50 border border-blue-500/40 transition-all cursor-pointer"
+                        >
+                            + Salvar & Selecionar Comissão
+                        </button>
+                    @endif
+                </div>
+            </aside>
+        </div>
+    @endif
 
     <!-- Modal de Guia de Preenchimento -->
     @if ($modalGuiaAberto)
@@ -477,19 +889,19 @@ new #[Layout('layouts.app')] class extends Component
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-lg bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-400">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                         </div>
                         <div>
                             <h3 class="text-sm font-bold text-white uppercase tracking-wider font-mono">
-                                Guia de Apoio: Cadastro de Documento Referência
+                                Guia de Cadastro de Documentos Militares
                             </h3>
-                            <p class="text-xs text-blue-400/80 font-mono">Diretrizes do Estado-Maior do ComForS</p>
+                            <p class="text-xs text-blue-400/80 font-mono">Diretrizes de Rastreabilidade do ComForS</p>
                         </div>
                     </div>
-                    <button
-                        type="button"
-                        wire:click="$set('modalGuiaAberto', false)"
+                    <button 
+                        type="button" 
+                        wire:click="$set('modalGuiaAberto', false)" 
                         class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
                     >
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -500,38 +912,38 @@ new #[Layout('layouts.app')] class extends Component
 
                 <div class="p-6 overflow-y-auto space-y-4 text-xs font-mono text-gray-300">
                     <div class="p-3.5 rounded-xl bg-blue-950/20 border border-blue-800/30">
-                        <span class="text-blue-300 font-bold block mb-1">FINALIDADE DOUTRINÁRIA</span>
-                        Esta tela permite registrar e catalogar documentos operativos e administrativos (como RFCs, ARFCs e relatórios técnicos) que respaldam as Lições Aprendidas identificadas pelas tripulações.
+                        <span class="text-blue-300 font-bold block mb-1">FINALIDADE DA BASE DOCUMENTAL</span>
+                        Esta tela centraliza o cadastro prévio de documentos que servirão de embasamento para o SIPA-SUB e Lições Aprendidas, assegurando numeração oficial única baseada na sigla militar.
                     </div>
 
                     <div class="space-y-3">
                         <div class="border-l-2 border-blue-500 pl-3">
                             <p class="text-white font-bold">1. Tipo de Documento & Sigla</p>
                             <p class="text-gray-400 text-[11px] mt-0.5">
-                                Selecione o tipo pré-cadastrado na tabela de apoio (ex: RFC para Relatório Final de Comissão, ARFC para Análise de RFC). Caso o tipo desejado não conste na lista, clique em <span class="text-yellow-400 font-bold">+ Novo Tipo</span> para cadastrá-lo dinamicamente.
+                                A sigla (ex: <strong class="text-yellow-400">RFC</strong> para Relatório Final de Comissão ou <strong class="text-yellow-400">ARFC</strong> para Análise) determina o prefixo do número de registro único. Caso o tipo ainda não exista, utilize o painel lateral deslizante à direita para cadastrá-lo com todos os seus dados.
                             </p>
                         </div>
 
                         <div class="border-l-2 border-blue-500 pl-3">
-                            <p class="text-white font-bold">2. Regra de Numeração Automática</p>
+                            <p class="text-white font-bold">2. Geração do Número Único</p>
                             <p class="text-gray-400 text-[11px] mt-0.5">
-                                O número único é construído dinamicamente na fórmula: <code class="text-white bg-black/40 px-1 py-0.5 rounded">SIGLA-ANO-SEQUENCIAL</code> (ex: <code class="text-yellow-400 bg-black/40 px-1 py-0.5 rounded">RFC-2026-0001</code>). Isso garante rastreabilidade total de cada documento.
+                                O número é gerado automaticamente no padrão <strong class="text-yellow-400">{SIGLA}-{ANO}-{SEQUENCIAL}</strong>, garantindo unicidade cronológica.
                             </p>
                         </div>
 
                         <div class="border-l-2 border-blue-500 pl-3">
-                            <p class="text-white font-bold">3. Vínculo Operacional</p>
+                            <p class="text-white font-bold">3. Vínculo com Lições Aprendidas</p>
                             <p class="text-gray-400 text-[11px] mt-0.5">
-                                Você pode correlacionar o documento ao <span class="text-blue-300 font-semibold">Meio Naval / OM</span> e à <span class="text-blue-300 font-semibold">Comissão Operacional</span> em que o evento ocorreu.
+                                Posteriormente, este documento poderá ser anexado ou referenciado diretamente ao redigir uma Lição Aprendida ou faina no SIPA-SUB.
                             </p>
                         </div>
                     </div>
                 </div>
 
                 <div class="px-6 py-3.5 bg-gray-950/80 border-t border-gray-800 flex items-center justify-end">
-                    <button
-                        type="button"
-                        wire:click="$set('modalGuiaAberto', false)"
+                    <button 
+                        type="button" 
+                        wire:click="$set('modalGuiaAberto', false)" 
                         class="px-4 py-2 rounded-xl text-xs font-mono font-semibold bg-blue-600 hover:bg-blue-500 text-white transition-colors cursor-pointer"
                     >
                         Entendido / Fechar Guia
