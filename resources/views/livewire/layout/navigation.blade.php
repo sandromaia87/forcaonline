@@ -134,6 +134,15 @@ new class extends Component
                                 <span class="w-1.5 h-1.5 rounded-full {{ request()->routeIs('licoes.subsistemas') ? 'bg-blue-400' : 'bg-gray-600' }}"></span>
                                 <span>Sistemas & Subsistemas</span>
                             </a>
+                            <!-- Comissões Operacionais -->
+                            <a
+                                href="{{ route('licoes.comissoes') }}"
+                                wire:navigate
+                                class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-150 {{ request()->routeIs('licoes.comissoes') ? 'bg-blue-900/50 text-blue-300 border border-blue-600/40' : 'text-gray-400 hover:text-white hover:bg-gray-900/40' }}"
+                            >
+                                <span class="w-1.5 h-1.5 rounded-full {{ request()->routeIs('licoes.comissoes') ? 'bg-blue-400' : 'bg-gray-600' }}"></span>
+                                <span>Comissões Operacionais</span>
+                            </a>
                         </div>
                     </div>
 
