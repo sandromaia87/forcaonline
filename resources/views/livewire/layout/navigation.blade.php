@@ -74,6 +74,15 @@ new class extends Component
                         </div>
                         <span>Nova Lição</span>
                     </a>
+                    <!-- 3. Botão Novo Documento no Sidebar -->
+                    <a href="{{ route('licoes.documento') }}" wire:navigate class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('licoes.documento') ? 'bg-gradient-to-r from-blue-900/60 to-blue-800/40 text-white border border-blue-600/40 shadow-lg shadow-blue-950/50' : 'text-gray-400 hover:text-white hover:bg-gray-900/60' }}">
+                        <div class="w-8 h-8 rounded-lg {{ request()->routeIs('licoes.documento') ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'bg-gray-800 text-gray-400' }} flex items-center justify-center">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                        </div>
+                        <span>Novo Documento</span>
+                    </a>
 
                     <!-- 3. Botão Pesquisar (Logo após Nova Lição) -->
                     <a href="{{ route('licoes.pesquisar') }}" wire:navigate class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('licoes.pesquisar') ? 'bg-gradient-to-r from-blue-900/60 to-blue-800/40 text-white border border-blue-600/40 shadow-lg shadow-blue-950/50' : 'text-gray-400 hover:text-white hover:bg-gray-900/60' }}">
@@ -87,7 +96,7 @@ new class extends Component
 
                     <!-- 4. Accordion Demonstrativo de Tabelas de Apoio -->
                     <div 
-                        x-data="{ openCadastros: {{ (request()->routeIs('licoes.meios-navais') || request()->routeIs('licoes.subsistemas') || request()->routeIs('licoes.comissoes')) ? 'true' : 'false' }} }" 
+                        x-data="{ openCadastros: {{ (request()->routeIs('licoes.meios-navais') || request()->routeIs('licoes.subsistemas') || request()->routeIs('licoes.comissoes') || request()->routeIs('licoes.tipos-documento')) ? 'true' : 'false' }} }" 
                         class="pt-1"
                     >
                         <button 
@@ -142,6 +151,15 @@ new class extends Component
                             >
                                 <span class="w-1.5 h-1.5 rounded-full {{ request()->routeIs('licoes.comissoes') ? 'bg-blue-400' : 'bg-gray-600' }}"></span>
                                 <span>Comissões Operacionais</span>
+                            </a>
+                            <!-- Tipos de Documento -->
+                            <a
+                                href="{{ route('licoes.tipos-documento') }}"
+                                wire:navigate
+                                class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-150 {{ request()->routeIs('licoes.tipos-documento') ? 'bg-blue-900/50 text-blue-300 border border-blue-600/40' : 'text-gray-400 hover:text-white hover:bg-gray-900/40' }}"
+                            >
+                                <span class="w-1.5 h-1.5 rounded-full {{ request()->routeIs('licoes.tipos-documento') ? 'bg-blue-400' : 'bg-gray-600' }}"></span>
+                                <span>Tipos de Documento</span>
                             </a>
                         </div>
                     </div>
@@ -231,10 +249,18 @@ new class extends Component
                             <a href="{{ route('licoes.dashboard') }}" wire:navigate class="hover:underline">Lições Aprendidas</a>
                             <span>/</span>
                             <span class="text-blue-400 font-medium">Sistemas & Subsistemas</span>
+                        @elseif(request()->routeIs('licoes.documento'))
+                            <a href="{{ route('licoes.dashboard') }}" wire:navigate class="hover:underline">Lições Aprendidas</a>
+                            <span>/</span>
+                            <span class="text-blue-400 font-medium">Novo Documento</span>
                         @elseif(request()->routeIs('licoes.comissoes'))
                             <a href="{{ route('licoes.dashboard') }}" wire:navigate class="hover:underline">Lições Aprendidas</a>
                             <span>/</span>
                             <span class="text-blue-400 font-medium">Comissões Operacionais</span>
+                        @elseif(request()->routeIs('licoes.tipos-documento'))
+                            <a href="{{ route('licoes.dashboard') }}" wire:navigate class="hover:underline">Lições Aprendidas</a>
+                            <span>/</span>
+                            <span class="text-blue-400 font-medium">Tipos de Documento</span>
                         @elseif(request()->routeIs('licoes.*'))
                             <span class="text-blue-400 font-medium">Lições Aprendidas</span>
                         @elseif(request()->routeIs('sipasub.*'))
@@ -256,8 +282,12 @@ new class extends Component
                             GESTÃO DE MEIOS NAVAIS E ORGANIZAÇÕES MILITARES
                         @elseif(request()->routeIs('licoes.subsistemas'))
                             GESTÃO DE SISTEMAS E SUBSISTEMAS OPERACIONAIS
+                        @elseif(request()->routeIs('licoes.documento'))
+                            CADASTRAR NOVO DOCUMENTO REFERÊNCIA
                         @elseif(request()->routeIs('licoes.comissoes'))
                             GESTÃO DE COMISSÕES OPERACIONAIS
+                        @elseif(request()->routeIs('licoes.tipos-documento'))
+                            GESTÃO DE TIPOS DE DOCUMENTO
                         @elseif(request()->routeIs('licoes.*'))
                             MÓDULO LIÇÕES APRENDIDAS
                         @elseif(request()->routeIs('sipasub.*'))

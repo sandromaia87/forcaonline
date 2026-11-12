@@ -9,15 +9,13 @@ new #[Layout('layouts.app')] class extends Component
     public array $meios_navais = [];
     public array $sistemas = [];
     public array $comissoes = [];
-    public array $rfcs_disponiveis = [];
-
+    
     // Dados do formulário
     public string $submarino = '';
     public string $grau_sigilo = 'RESERVADO';
     public string $sistema = '';
     public string $comissao = '';
-    public string $rfc_numero = '';
-    public string $data_ocorrencia = '';
+        public string $data_ocorrencia = '';
     public string $titulo = '';
     public string $relato = '';
     public string $recomendacao = '';
@@ -61,13 +59,7 @@ new #[Layout('layouts.app')] class extends Component
         $sessionComissoes = session('licoes_comissoes', []);
         $this->comissoes = array_values(array_unique(array_filter(array_merge($crudComissoes, $sessionComissoes))));
 
-        // Exemplos preliminares de RFCs vinculados (futuro CRUD no SIPA-SUB)
-        $this->rfcs_disponiveis = [
-            ['id' => '1', 'numero' => 'RFC-2026/014', 'descricao' => 'RFC-2026/014 - Faina de Imersão e Teste de Snorquel S34'],
-            ['id' => '2', 'numero' => 'RFC-2026/029', 'descricao' => 'RFC-2026/029 - Operação Tropicalex 2026 S40'],
-            ['id' => '3', 'numero' => 'RFC-2026/033', 'descricao' => 'RFC-2026/033 - Patrulha Submersa Atlântico Sul S41'],
-        ];
-    }
+            }
 
     public function abrirGuia(): void
     {
@@ -201,8 +193,7 @@ new #[Layout('layouts.app')] class extends Component
             'grau_sigilo' => $this->grau_sigilo,
             'sistema' => $this->sistema,
             'comissao' => $this->comissao,
-            'rfc' => $this->rfc_numero,
-            'data_ocorrencia' => $this->data_ocorrencia,
+                        'data_ocorrencia' => $this->data_ocorrencia,
             'titulo' => trim($this->titulo),
             'relato' => trim($this->relato),
             'recomendacao' => trim($this->recomendacao),
@@ -217,7 +208,7 @@ new #[Layout('layouts.app')] class extends Component
 
     public function novaLicao(): void
     {
-        $this->reset(['submarino', 'sistema', 'comissao', 'rfc_numero', 'titulo', 'relato', 'recomendacao', 'salvo']);
+        $this->reset(['submarino', 'sistema', 'comissao', 'titulo', 'relato', 'recomendacao', 'salvo']);
         $this->grau_sigilo = 'RESERVADO';
         $this->data_ocorrencia = date('Y-m-d');
     }
@@ -520,33 +511,10 @@ new #[Layout('layouts.app')] class extends Component
                 <span class="text-[10px] text-gray-500 font-mono mt-1 block">Faina ou missão naval onde o fato ocorreu</span>
             </div>
 
-            <!-- 5. Relatório Final de Comissão (RFC) - Futuro SIPA-SUB -->
-            <div>
-                <div class="flex items-center justify-between mb-2">
-                    <label for="rfc_numero" class="text-xs font-mono uppercase text-gray-300 font-semibold flex items-center gap-1.5">
-                        <span>Vincular RFC</span>
-                        <span class="text-[10px] text-amber-400 bg-amber-950/60 border border-amber-700/40 px-1.5 py-0.2 rounded font-normal">SIPA-SUB</span>
-                    </label>
-                </div>
-                <select 
-                    id="rfc_numero" 
-                    wire:model="rfc_numero" 
-                    class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition-colors"
-                >
-                    <option value="">Nenhum RFC vinculado</option>
-                    @foreach ($rfcs_disponiveis as $r)
-                        <option value="{{ $r['numero'] }}">{{ $r['descricao'] }}</option>
-                    @endforeach
-                </select>
-                <span class="text-[10px] text-amber-400/80 font-mono mt-1 block">
-                    * Será integrado ao CRUD de Relatórios Finais no SIPA-SUB
-                </span>
-            </div>
-
-            <!-- 6. Data da Ocorrência -->
+            <!-- Data da Ocorrência -->
             <div>
                 <label for="data_ocorrencia" class="block text-xs font-mono uppercase text-gray-300 font-semibold mb-2">
-                    Data da Ocorrência
+                    Data da Ocorrência <span class="text-red-400">*</span>
                 </label>
                 <input 
                     type="date" 
@@ -660,7 +628,7 @@ new #[Layout('layouts.app')] class extends Component
                         </div>
 
                         <div class="border-l-2 border-blue-500 pl-3">
-                            <p class="text-white font-bold">2. Comissão Operacional & RFC (SIPA-SUB)</p>
+                            <p class="text-white font-bold">2. Comissão Operacional</p>
                             <p class="text-gray-400 text-[11px] mt-0.5">Indica a faina ou viagem onde ocorreu a observação. O campo de <span class="text-amber-400 font-bold">RFC</span> vincula a ocorrência ao Relatório Final de Comissão que será gerenciado pelo módulo SIPA-SUB.</p>
                         </div>
 

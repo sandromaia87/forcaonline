@@ -46,10 +46,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('licoes-aprendidas')->name('licoes.')->group(function () {
         Volt::route('/dashboard', 'pages.licoes.dashboard')->name('dashboard');
         Volt::route('/nova', 'pages.licoes.nova')->name('nova');
+        Volt::route('/documento', 'pages.licoes.documento')->name('documento');
         Volt::route('/pesquisar', 'pages.licoes.pesquisar')->name('pesquisar');
         Volt::route('/meios-navais', 'pages.licoes.meios-navais')->name('meios-navais');
         Volt::route('/subsistemas', 'pages.licoes.subsistemas')->name('subsistemas');
         Volt::route('/comissoes', 'pages.licoes.comissoes')->name('comissoes');
+        Volt::route('/tipos-documento', 'pages.licoes.tipos-documento')->name('tipos-documento');
     });
 
     // Grupo SIPA-SUB (Isolamento estrito - links próprios deste módulo)
