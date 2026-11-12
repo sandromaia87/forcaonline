@@ -11,6 +11,17 @@ new #[Layout('layouts.app')] class extends Component
 
     // Estado do Modal
     public bool $modalAberto = false;
+    public bool $modalGuiaAberto = false;
+
+    public function abrirGuia(): void
+    {
+        $this->modalGuiaAberto = true;
+    }
+
+    public function fecharGuia(): void
+    {
+        $this->modalGuiaAberto = false;
+    }
     public ?string $editandoId = null;
     public string $nome = '';
     public string $area = 'Propulsão & Geração';

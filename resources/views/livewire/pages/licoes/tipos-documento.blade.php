@@ -30,7 +30,26 @@ new #[Layout('layouts.app')] class extends Component
         session(['modulo_ativo' => 'licoes_aprendidas']);
 
         // Carrega da sessão, iniciando vazia
-        $this->tipos = session('crud_tipos_documento', []);
+        $padroes = [
+            [
+                'id' => '1',
+                'sigla' => 'RFC',
+                'nome' => 'Relatório Final de Comissão',
+                'descricao' => 'Relatório circunstanciado elaborado pelo Comandante da Unidade e tripulação ao encerramento de missões, exercícios no mar e fainas de imersão.',
+                'status' => 'Ativo',
+            ],
+            [
+                'id' => '2',
+                'sigla' => 'ARFC',
+                'nome' => 'Análise de Relatório Final de Comissão',
+                'descricao' => 'Parecer técnico e lições aprendidas homologadas pelo Estado-Maior do ComForS sobre os fatos relatados no RFC.',
+                'status' => 'Ativo',
+            ],
+        ];
+        $this->tipos = session('crud_tipos_documento', $padroes);
+        if (! session()->has('crud_tipos_documento')) {
+            session(['crud_tipos_documento' => $padroes]);
+        }
     }
 
     public function abrirModalNovo(): void

@@ -5,36 +5,47 @@ use Livewire\Volt\Component;
 
 new #[Layout('layouts.app')] class extends Component
 {
-    // Listas dinâmicas que iniciam vazias conforme especificado
-    public array $meios_navais = [];
-    public array $sistemas = [];
-    public array $comissoes = [];
+    // Listas dinâmicas
+    public array  = [];
+    public array  = [];
+    public array  = [];
     
-    // Dados do formulário
-    public string $submarino = '';
-    public string $grau_sigilo = 'RESERVADO';
-    public string $sistema = '';
-    public string $comissao = '';
-        public string $data_ocorrencia = '';
-    public string $titulo = '';
-    public string $relato = '';
-    public string $recomendacao = '';
-    public bool $salvo = false;
+    // Dados do formulário da lição
+    public string  = '';
+    public string  = 'RESERVADO';
+    public string  = '';
+    public string  = '';
+    public string  = '';
+    public string  = '';
+    public string  = '';
+    public string  = '';
 
-    // Modal de Guia de Apoio
-    public bool $modalGuiaAberto = false;
+    public bool  = false;
+    public bool  = false;
 
-    // Controle inline de adição de novo meio naval
-    public bool $adicionando_meio = false;
-    public string $novo_meio = '';
+    // Left Sidebar Modal (Drawer Lateral de Apoio)
+    public bool  = false;
+    public string  = ''; // 'meio_naval' | 'subsistema' | 'comissao'
 
-    // Controle inline de adição de novo subsistema
-    public bool $adicionando_sistema = false;
-    public string $novo_sistema = '';
+    // Campos do Drawer: Meio Naval
+    public string  = '';
+    public string  = '';
+    public string  = 'Submarino';
+    public string  = 'Classe Riachuelo (S-BR)';
+    public string  = 'Operacional';
 
-    // Controle inline de adição de nova comissão
-    public bool $adicionando_comissao = false;
-    public string $nova_comissao = '';
+    // Campos do Drawer: Subsistema
+    public string  = '';
+    public string  = 'Propulsão & Geração';
+    public string  = 'Crítica de Segurança';
+    public string  = 'Homologado';
+
+    // Campos do Drawer: Comissão
+    public string  = '';
+    public string  = '';
+    public string  = 'Adestramento de Imersão';
+    public string  = '';
+    public string  = 'Concluída';
 
     public function mount(): void
     {
@@ -58,8 +69,7 @@ new #[Layout('layouts.app')] class extends Component
         $crudComissoes = array_map(fn($c) => is_array($c) ? ($c['codigo'] . ' - ' . $c['nome']) : $c, session('crud_comissoes', []));
         $sessionComissoes = session('licoes_comissoes', []);
         $this->comissoes = array_values(array_unique(array_filter(array_merge($crudComissoes, $sessionComissoes))));
-
-            }
+    }
 
     public function abrirGuia(): void
     {
@@ -71,151 +81,199 @@ new #[Layout('layouts.app')] class extends Component
         $this->modalGuiaAberto = false;
     }
 
-    public function abrirNovoMeio(): void
+    // Gerenciamento do Left Sidebar Modal
+    public function abrirDrawer(string $tipo): void
     {
-        $this->adicionando_meio = true;
-        $this->novo_meio = '';
+        $this->drawerTipo = $tipo;
+        $this->drawerAberto = true;
+        $this->resetValidation();
+
+        if ($tipo === 'meio_naval') {
+            $this->drawerMeioIndicativo = '';
+            $this->drawerMeioNome = '';
+            $this->drawerMeioTipo = 'Submarino';
+            $this->drawerMeioClasse = 'Classe Riachuelo (S-BR)';
+            $this->drawerMeioStatus = 'Operacional';
+        } elseif ($tipo === 'subsistema') {
+            $this->drawerSisNome = '';
+            $this->drawerSisArea = 'Propulsão & Geração';
+            $this->drawerSisCriticidade = 'Crítica de Segurança';
+            $this->drawerSisStatus = 'Homologado';
+        } elseif ($tipo === 'comissao') {
+            $this->drawerComCodigo = '';
+            $this->drawerComNome = '';
+            $this->drawerComTipo = 'Adestramento de Imersão';
+            $this->drawerComAno = date('Y');
+            $this->drawerComStatus = 'Concluída';
+        }
     }
 
-    public function cancelarNovoMeio(): void
+    public function fecharDrawer(): void
     {
-        $this->adicionando_meio = false;
-        $this->novo_meio = '';
+        $this->drawerAberto = false;
+        $this->drawerTipo = '';
+        $this->resetValidation();
     }
 
-    public function adicionarMeio(): void
+    public function salvarDrawerMeio(): void
     {
         $this->validate([
-            'novo_meio' => 'required|min:2|max:100',
+            'drawerMeioIndicativo' => 'required|min:2|max:20',
+            'drawerMeioNome' => 'required|min:3|max:100',
         ], [
-            'novo_meio.required' => 'Digite a identificação do novo meio naval ou OM.',
-            'novo_meio.min' => 'A identificação deve ter pelo menos 2 caracteres.',
+            'drawerMeioIndicativo.required' => 'O indicativo naval é obrigatório (ex: S34, BACS).',
+            'drawerMeioNome.required' => 'O nome do meio naval ou OM é obrigatório.',
         ]);
 
-        $item = trim($this->novo_meio);
-        if (! in_array($item, $this->meios_navais)) {
-            $this->meios_navais[] = $item;
+        $ind = strtoupper(trim($this->drawerMeioIndicativo));
+        $nom = trim($this->drawerMeioNome);
+        $label = "{$ind} - {$nom}";
+
+        if (! in_array($label, $this->meios_navais)) {
+            $this->meios_navais[] = $label;
             session(['licoes_meios_navais' => $this->meios_navais]);
         }
 
-        $this->submarino = $item;
-        $this->adicionando_meio = false;
-        $this->novo_meio = '';
+        $crud = session('crud_meios_navais', []);
+        $crud[] = [
+            'id' => (string) (count($crud) + 1),
+            'indicativo' => $ind,
+            'nome' => $nom,
+            'tipo' => $this->drawerMeioTipo,
+            'classe' => $this->drawerMeioClasse,
+            'status' => $this->drawerMeioStatus,
+        ];
+        session(['crud_meios_navais' => $crud]);
+
+        $this->submarino = $label;
+        $this->fecharDrawer();
     }
 
-    public function abrirNovoSistema(): void
-    {
-        $this->adicionando_sistema = true;
-        $this->novo_sistema = '';
-    }
-
-    public function cancelarNovoSistema(): void
-    {
-        $this->adicionando_sistema = false;
-        $this->novo_sistema = '';
-    }
-
-    public function adicionarSistema(): void
+    public function salvarDrawerSistema(): void
     {
         $this->validate([
-            'novo_sistema' => 'required|min:2|max:150',
+            'drawerSisNome' => 'required|min:3|max:100',
         ], [
-            'novo_sistema.required' => 'Digite a descrição do novo subsistema.',
-            'novo_sistema.min' => 'O subsistema deve ter pelo menos 2 caracteres.',
+            'drawerSisNome.required' => 'O nome do subsistema operacional é obrigatório.',
         ]);
 
-        $item = trim($this->novo_sistema);
-        if (! in_array($item, $this->sistemas)) {
-            $this->sistemas[] = $item;
+        $nom = trim($this->drawerSisNome);
+        if (! in_array($nom, $this->sistemas)) {
+            $this->sistemas[] = $nom;
             session(['licoes_sistemas' => $this->sistemas]);
         }
 
-        $this->sistema = $item;
-        $this->adicionando_sistema = false;
-        $this->novo_sistema = '';
+        $crud = session('crud_subsistemas', []);
+        $crud[] = [
+            'id' => (string) (count($crud) + 1),
+            'nome' => $nom,
+            'area' => $this->drawerSisArea,
+            'criticidade' => $this->drawerSisCriticidade,
+            'status' => $this->drawerSisStatus,
+        ];
+        session(['crud_subsistemas' => $crud]);
+
+        $this->sistema = $nom;
+        $this->fecharDrawer();
     }
 
-    public function abrirNovaComissao(): void
-    {
-        $this->adicionando_comissao = true;
-        $this->nova_comissao = '';
-    }
-
-    public function cancelarNovaComissao(): void
-    {
-        $this->adicionando_comissao = false;
-        $this->nova_comissao = '';
-    }
-
-    public function adicionarComissao(): void
+    public function salvarDrawerComissao(): void
     {
         $this->validate([
-            'nova_comissao' => 'required|min:3|max:120',
+            'drawerComCodigo' => 'required|min:2|max:30',
+            'drawerComNome' => 'required|min:3|max:100',
         ], [
-            'nova_comissao.required' => 'Digite o nome ou sigla da nova comissão.',
-            'nova_comissao.min' => 'A comissão deve ter pelo menos 3 caracteres.',
+            'drawerComCodigo.required' => 'O código da comissão é obrigatório (ex: TROPICALEX-2026).',
+            'drawerComNome.required' => 'O nome da comissão ou faina é obrigatório.',
         ]);
 
-        $item = trim($this->nova_comissao);
-        if (! in_array($item, $this->comissoes)) {
-            $this->comissoes[] = $item;
+        $cod = strtoupper(trim($this->drawerComCodigo));
+        $nom = trim($this->drawerComNome);
+        $label = "{$cod} - {$nom}";
+
+        if (! in_array($label, $this->comissoes)) {
+            $this->comissoes[] = $label;
             session(['licoes_comissoes' => $this->comissoes]);
         }
 
-        $this->comissao = $item;
-        $this->adicionando_comissao = false;
-        $this->nova_comissao = '';
+        $crud = session('crud_comissoes', []);
+        $crud[] = [
+            'id' => (string) (count($crud) + 1),
+            'codigo' => $cod,
+            'nome' => $nom,
+            'tipo' => $this->drawerComTipo,
+            'ano' => $this->drawerComAno ?: date('Y'),
+            'status' => $this->drawerComStatus,
+        ];
+        session(['crud_comissoes' => $crud]);
+
+        $this->comissao = $label;
+        $this->fecharDrawer();
     }
 
     public function salvar(): void
     {
         $this->validate([
             'submarino' => 'required',
-            'grau_sigilo' => 'required',
+            'grau_sigilo' => 'required|in:OSTENSIVO,RESERVADO,CONFIDENCIAL,SECRETO',
             'sistema' => 'required',
             'titulo' => 'required|min:5|max:255',
             'relato' => 'required|min:10',
             'recomendacao' => 'required|min:10',
         ], [
-            'submarino.required' => 'Selecione ou adicione o meio naval correspondente.',
-            'grau_sigilo.required' => 'Indique o grau de sigilo doutrinário.',
-            'sistema.required' => 'Selecione ou adicione o subsistema operacional afetado.',
-            'titulo.required' => 'Informe o título da lição aprendida.',
-            'relato.required' => 'Descreva detalhadamente a ocorrência operacional ou técnica.',
-            'recomendacao.required' => 'Apresente a lição doutrinária homologada para as tripulações.',
+            'submarino.required' => 'Selecione ou cadastre o meio naval / OM.',
+            'sistema.required' => 'Selecione ou cadastre o subsistema afetado.',
+            'titulo.required' => 'Informe o título da ocorrência (mínimo 5 caracteres).',
+            'relato.required' => 'Descreva detalhadamente o relato circunstanciado.',
+            'recomendacao.required' => 'Indique a lição técnica homologada recomendada.',
         ]);
 
-        $todas = session('licoes_cadastradas', []);
-        $nova = [
-            'id' => (string) (count($todas) + 1),
-            'protocolo' => 'LA-' . date('Y') . '-' . str_pad((string)(count($todas) + 1), 4, '0', STR_PAD_LEFT),
+        $ano = $this->data_ocorrencia ? date('Y', strtotime($this->data_ocorrencia)) : date('Y');
+        $totalExistentes = count(session('licoes_aprendidas_registros', []));
+        $seq = str_pad((string)($totalExistentes + 1), 4, '0', STR_PAD_LEFT);
+        $protocolo = "LA-{\Cardano_ano}-{$seq}";
+        $protocolo = "LA-{\Cardano_ano}-{$seq}";
+        $protocolo = "LA-{\Cardano_ano}-{$seq}";
+        $protocolo = "LA-{$ano}-{$seq}";
+
+        $novaLicao = [
+            'id' => (string) time(),
+            'protocolo' => $protocolo,
             'submarino' => $this->submarino,
-            'grau_sigilo' => $this->grau_sigilo,
+            'classe' => 'Meio Operacional ComForS',
             'sistema' => $this->sistema,
             'comissao' => $this->comissao,
-                        'data_ocorrencia' => $this->data_ocorrencia,
             'titulo' => trim($this->titulo),
+            'data' => $this->data_ocorrencia ? date('d/m/Y', strtotime($this->data_ocorrencia)) : date('d/m/Y'),
+            'data_ocorrencia' => $this->data_ocorrencia ?: date('Y-m-d'),
+            'autor' => auth()->user()->graduacao . ' ' . auth()->user()->name,
+            'nip' => auth()->user()->nip,
+            'classificacao' => $this->grau_sigilo,
+            'status' => 'Homologada',
             'relato' => trim($this->relato),
             'recomendacao' => trim($this->recomendacao),
-            'autor' => (auth()->user()->graduacao ?? 'MILITAR') . ' ' . auth()->user()->name,
-            'nip' => auth()->user()->nip,
+            'anexos_count' => 0,
         ];
-        $todas[] = $nova;
-        session(['licoes_cadastradas' => $todas]);
+
+        $existentes = session('licoes_aprendidas_registros', []);
+        array_unshift($existentes, $novaLicao);
+        session(['licoes_aprendidas_registros' => $existentes]);
 
         $this->salvo = true;
     }
 
-    public function novaLicao(): void
+    public function resetForm(): void
     {
-        $this->reset(['submarino', 'sistema', 'comissao', 'titulo', 'relato', 'recomendacao', 'salvo']);
+        $this->reset(['submarino', 'sistema', 'comissao', 'titulo', 'relato', 'recomendacao']);
         $this->grau_sigilo = 'RESERVADO';
         $this->data_ocorrencia = date('Y-m-d');
+        $this->salvo = false;
+        $this->resetValidation();
     }
 }; ?>
 
-<div class="space-y-6 select-none">
-    <!-- Banner de Construção & Homologação Doutrinária com Botão Guia -->
+<div class="space-y-6 select-none w-full">
+    <!-- Banner de Construção & Homologação Doutrinária -->
     <div class="p-4 rounded-2xl bg-gradient-to-r from-amber-950/40 via-[#0a1424] to-[#040a16] border border-amber-500/30 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shrink-0">
@@ -238,43 +296,45 @@ new #[Layout('layouts.app')] class extends Component
 
         <button 
             type="button" 
-            wire:click="abrirGuia"
-            class="flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs font-mono font-semibold text-blue-300 bg-gray-900/90 hover:bg-gray-800 border border-blue-500/30 hover:border-blue-400/60 shadow-lg shadow-black/40 transition-all duration-200 cursor-pointer self-start sm:self-auto shrink-0"
+            wire:click="abrirGuia" 
+            class="flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs font-mono font-semibold text-blue-300 bg-gray-900/90 hover:bg-gray-800 border border-blue-500/30 hover:border-blue-400/60 shadow-lg shadow-black/40 transition-all cursor-pointer self-start sm:self-auto shrink-0"
         >
             <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <span>Guia de Preenchimento</span>
         </button>
     </div>
 
-    <!-- Mensagem de Sucesso (Se Salvo) -->
-    @if ($salvo)
+    <!-- Alerta de Sucesso -->
+    @if ()
         <div class="p-6 rounded-2xl bg-gradient-to-r from-emerald-950/80 to-[#041a12] border border-emerald-500/40 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3.5">
                 <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0">
                     <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                     </svg>
                 </div>
                 <div>
-                    <h3 class="text-sm font-bold text-emerald-300 uppercase font-mono">Lição Aprendida Registrada com Sucesso!</h3>
+                    <h3 class="text-sm font-bold text-emerald-300 uppercase font-mono">
+                        Lição Aprendida Registrada com Sucesso!
+                    </h3>
                     <p class="text-xs text-gray-300 mt-0.5">
-                        Ocorrência homologada preliminarmente sob supervisão do ComForS / CLTI. Protocolo gerado com sucesso.
+                        Ocorrência homologada preliminarmente sob supervisão do ComForS / CLTI.
                     </p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
                 <button 
-                    wire:click="novaLicao" 
+                    wire:click="resetForm" 
                     type="button" 
                     class="px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold text-white bg-emerald-600 hover:bg-emerald-500 transition-colors cursor-pointer"
                 >
                     Cadastrar Outra
                 </button>
                 <a 
-                    href="{{ route('licoes.dashboard') }}" 
-                    wire:navigate 
+                    href="{{ route('dashboard') }}" 
+                    wire:navigate
                     class="px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold text-gray-300 hover:text-white bg-gray-900 border border-gray-700 transition-colors cursor-pointer"
                 >
                     Ir ao Início
@@ -287,72 +347,38 @@ new #[Layout('layouts.app')] class extends Component
     <form wire:submit="salvar" class="rounded-2xl p-6 sm:p-8 bg-[#040a16] border border-gray-800/80 shadow-2xl space-y-6">
         <!-- 1ª Linha: Meio Naval, Grau de Sigilo, Subsistema -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <!-- 1. Meio Naval / Submarino (Dinâmico com Adicionar Novo) -->
+            <!-- 1. Meio Naval / Submarino (Com Left Sidebar Drawer) -->
             <div>
                 <div class="flex items-center justify-between mb-2">
                     <label for="submarino" class="text-xs font-mono uppercase text-gray-300 font-semibold">
                         Meio Naval / OM <span class="text-red-400">*</span>
                     </label>
-                    @if (! $adicionando_meio)
-                        <button 
-                            type="button" 
-                            wire:click="abrirNovoMeio" 
-                            class="inline-flex items-center gap-1 text-[11px] font-mono text-yellow-400 hover:text-yellow-300 hover:underline cursor-pointer"
-                        >
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                            </svg>
-                            <span>+ Adicionar Novo</span>
-                        </button>
-                    @endif
+                    <button 
+                        type="button" 
+                        wire:click="abrirDrawer('meio_naval')" 
+                        class="inline-flex items-center gap-1 text-[11px] font-mono text-yellow-400 hover:text-yellow-300 hover:underline cursor-pointer"
+                    >
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span>+ Adicionar Novo</span>
+                    </button>
                 </div>
 
-                @if ($adicionando_meio)
-                    <div class="p-3 rounded-xl bg-blue-950/40 border border-blue-800/80 space-y-2.5">
-                        <div class="text-[11px] font-mono text-blue-300 font-semibold flex items-center gap-1.5">
-                            <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
-                            <span>Novo Meio Naval</span>
-                        </div>
-                        <input 
-                            type="text" 
-                            wire:model="novo_meio" 
-                            placeholder="Ex: S34 - Tikuna, BACS, S40..." 
-                            class="w-full bg-[#02050d] border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 font-mono"
-                        />
-                        @error('novo_meio') <span class="text-[10px] text-red-400 font-mono block">{{ $message }}</span> @enderror
-                        <div class="flex items-center gap-2">
-                            <button 
-                                type="button" 
-                                wire:click="adicionarMeio" 
-                                class="px-2.5 py-1 rounded-lg text-[11px] font-mono font-bold bg-blue-600 hover:bg-blue-500 text-white cursor-pointer"
-                            >
-                                Adicionar
-                            </button>
-                            <button 
-                                type="button" 
-                                wire:click="cancelarNovoMeio" 
-                                class="px-2.5 py-1 rounded-lg text-[11px] font-mono text-gray-400 hover:text-white bg-gray-900 border border-gray-700 cursor-pointer"
-                            >
-                                Cancelar
-                            </button>
-                        </div>
-                    </div>
-                @else
-                    <select 
-                        id="submarino" 
-                        wire:model="submarino" 
-                        class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition-colors"
-                    >
-                        @if (empty($meios_navais))
-                            <option value="">Nenhum cadastrado. Clique em "+ Adicionar Novo"</option>
-                        @else
-                            <option value="">Selecione o Meio Naval / OM</option>
-                            @foreach ($meios_navais as $item)
-                                <option value="{{ $item }}">{{ $item }}</option>
-                            @endforeach
-                        @endif
-                    </select>
-                @endif
+                <select 
+                    id="submarino" 
+                    wire:model="submarino" 
+                    class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition-colors"
+                >
+                    @if (empty($meios_navais))
+                        <option value="">Nenhum cadastrado. Clique em "+ Adicionar Novo"</option>
+                    @else
+                        <option value="">Selecione o Meio Naval / OM</option>
+                        @foreach ($meios_navais as $item)
+                            <option value="{{ $item }}">{{ $item }}</option>
+                        @endforeach
+                    @endif
+                </select>
                 @error('submarino') <span class="text-[11px] text-red-400 font-mono mt-1 block">{{ $message }}</span> @enderror
             </div>
 
@@ -374,147 +400,80 @@ new #[Layout('layouts.app')] class extends Component
                 @error('grau_sigilo') <span class="text-[11px] text-red-400 font-mono mt-1 block">{{ $message }}</span> @enderror
             </div>
 
-            <!-- 3. Subsistema Afetado (Dinâmico com Adicionar Novo) -->
+            <!-- 3. Subsistema Afetado (Com Left Sidebar Drawer) -->
             <div>
                 <div class="flex items-center justify-between mb-2">
                     <label for="sistema" class="text-xs font-mono uppercase text-gray-300 font-semibold">
                         Subsistema Afetado <span class="text-red-400">*</span>
                     </label>
-                    @if (! $adicionando_sistema)
-                        <button 
-                            type="button" 
-                            wire:click="abrirNovoSistema" 
-                            class="inline-flex items-center gap-1 text-[11px] font-mono text-yellow-400 hover:text-yellow-300 hover:underline cursor-pointer"
-                        >
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                            </svg>
-                            <span>+ Adicionar Novo</span>
-                        </button>
-                    @endif
+                    <button 
+                        type="button" 
+                        wire:click="abrirDrawer('subsistema')" 
+                        class="inline-flex items-center gap-1 text-[11px] font-mono text-yellow-400 hover:text-yellow-300 hover:underline cursor-pointer"
+                    >
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span>+ Adicionar Novo</span>
+                    </button>
                 </div>
 
-                @if ($adicionando_sistema)
-                    <div class="p-3 rounded-xl bg-blue-950/40 border border-blue-800/80 space-y-2.5">
-                        <div class="text-[11px] font-mono text-blue-300 font-semibold flex items-center gap-1.5">
-                            <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
-                            <span>Novo Subsistema</span>
-                        </div>
-                        <input 
-                            type="text" 
-                            wire:model="novo_sistema" 
-                            placeholder="Ex: MCP, Baterias, Lemes, Sonar..." 
-                            class="w-full bg-[#02050d] border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 font-mono"
-                        />
-                        @error('novo_sistema') <span class="text-[10px] text-red-400 font-mono block">{{ $message }}</span> @enderror
-                        <div class="flex items-center gap-2">
-                            <button 
-                                type="button" 
-                                wire:click="adicionarSistema" 
-                                class="px-2.5 py-1 rounded-lg text-[11px] font-mono font-bold bg-blue-600 hover:bg-blue-500 text-white cursor-pointer"
-                            >
-                                Adicionar
-                            </button>
-                            <button 
-                                type="button" 
-                                wire:click="cancelarNovoSistema" 
-                                class="px-2.5 py-1 rounded-lg text-[11px] font-mono text-gray-400 hover:text-white bg-gray-900 border border-gray-700 cursor-pointer"
-                            >
-                                Cancelar
-                            </button>
-                        </div>
-                    </div>
-                @else
-                    <select 
-                        id="sistema" 
-                        wire:model="sistema" 
-                        class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition-colors"
-                    >
-                        @if (empty($sistemas))
-                            <option value="">Nenhum cadastrado. Clique em "+ Adicionar Novo"</option>
-                        @else
-                            <option value="">Selecione o Subsistema</option>
-                            @foreach ($sistemas as $item)
-                                <option value="{{ $item }}">{{ $item }}</option>
-                            @endforeach
-                        @endif
-                    </select>
-                @endif
+                <select 
+                    id="sistema" 
+                    wire:model="sistema" 
+                    class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition-colors"
+                >
+                    @if (empty($sistemas))
+                        <option value="">Nenhum cadastrado. Clique em "+ Adicionar Novo"</option>
+                    @else
+                        <option value="">Selecione o Subsistema Afetado</option>
+                        @foreach ($sistemas as $sis)
+                            <option value="{{ $sis }}">{{ $sis }}</option>
+                        @endforeach
+                    @endif
+                </select>
                 @error('sistema') <span class="text-[11px] text-red-400 font-mono mt-1 block">{{ $message }}</span> @enderror
             </div>
         </div>
 
-        <!-- 2ª Linha: Comissão (Dinâmica), Relatório Final de Comissão (RFC - SIPA-SUB), Data -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <!-- 4. Comissão Operacional (Dinâmico com Adicionar Novo) -->
+        <!-- 2ª Linha: Comissão Operacional e Data da Ocorrência -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- 4. Comissão Operacional (Com Left Sidebar Drawer) -->
             <div>
                 <div class="flex items-center justify-between mb-2">
                     <label for="comissao" class="text-xs font-mono uppercase text-gray-300 font-semibold">
                         Comissão Operacional
                     </label>
-                    @if (! $adicionando_comissao)
-                        <button 
-                            type="button" 
-                            wire:click="abrirNovaComissao" 
-                            class="inline-flex items-center gap-1 text-[11px] font-mono text-yellow-400 hover:text-yellow-300 hover:underline cursor-pointer"
-                        >
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                            </svg>
-                            <span>+ Adicionar Nova</span>
-                        </button>
-                    @endif
+                    <button 
+                        type="button" 
+                        wire:click="abrirDrawer('comissao')" 
+                        class="inline-flex items-center gap-1 text-[11px] font-mono text-yellow-400 hover:text-yellow-300 hover:underline cursor-pointer"
+                    >
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span>+ Adicionar Nova</span>
+                    </button>
                 </div>
 
-                @if ($adicionando_comissao)
-                    <div class="p-3 rounded-xl bg-blue-950/40 border border-blue-800/80 space-y-2.5">
-                        <div class="text-[11px] font-mono text-blue-300 font-semibold flex items-center gap-1.5">
-                            <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
-                            <span>Nova Comissão</span>
-                        </div>
-                        <input 
-                            type="text" 
-                            wire:model="nova_comissao" 
-                            placeholder="Ex: Operação Tropicalex, Adestramento S34..." 
-                            class="w-full bg-[#02050d] border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 font-mono"
-                        />
-                        @error('nova_comissao') <span class="text-[10px] text-red-400 font-mono block">{{ $message }}</span> @enderror
-                        <div class="flex items-center gap-2">
-                            <button 
-                                type="button" 
-                                wire:click="adicionarComissao" 
-                                class="px-2.5 py-1 rounded-lg text-[11px] font-mono font-bold bg-blue-600 hover:bg-blue-500 text-white cursor-pointer"
-                            >
-                                Adicionar
-                            </button>
-                            <button 
-                                type="button" 
-                                wire:click="cancelarNovaComissao" 
-                                class="px-2.5 py-1 rounded-lg text-[11px] font-mono text-gray-400 hover:text-white bg-gray-900 border border-gray-700 cursor-pointer"
-                            >
-                                Cancelar
-                            </button>
-                        </div>
-                    </div>
-                @else
-                    <select 
-                        id="comissao" 
-                        wire:model="comissao" 
-                        class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition-colors"
-                    >
-                        <option value="">Não vinculada / Selecione uma Comissão</option>
-                        @foreach ($comissoes as $c)
-                            <option value="{{ $c }}">{{ $c }}</option>
-                        @endforeach
-                    </select>
-                @endif
+                <select 
+                    id="comissao" 
+                    wire:model="comissao" 
+                    class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition-colors"
+                >
+                    <option value="">Não vinculada / Selecione uma Comissão</option>
+                    @foreach ($comissoes as $c)
+                        <option value="{{ $c }}">{{ $c }}</option>
+                    @endforeach
+                </select>
                 <span class="text-[10px] text-gray-500 font-mono mt-1 block">Faina ou missão naval onde o fato ocorreu</span>
+                @error('comissao') <span class="text-[11px] text-red-400 font-mono mt-1 block">{{ $message }}</span> @enderror
             </div>
 
-            <!-- Data da Ocorrência -->
+            <!-- 5. Data da Ocorrência -->
             <div>
                 <label for="data_ocorrencia" class="block text-xs font-mono uppercase text-gray-300 font-semibold mb-2">
-                    Data da Ocorrência <span class="text-red-400">*</span>
+                    Data da Ocorrência
                 </label>
                 <input 
                     type="date" 
@@ -522,10 +481,11 @@ new #[Layout('layouts.app')] class extends Component
                     wire:model="data_ocorrencia" 
                     class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition-colors"
                 />
+                @error('data_ocorrencia') <span class="text-[11px] text-red-400 font-mono mt-1 block">{{ $message }}</span> @enderror
             </div>
         </div>
 
-        <!-- 3ª Linha: Título -->
+        <!-- 3ª Linha: Título da Lição -->
         <div>
             <label for="titulo" class="block text-xs font-mono uppercase text-gray-300 font-semibold mb-2">
                 Título da Lição Aprendida <span class="text-red-400">*</span>
@@ -534,8 +494,8 @@ new #[Layout('layouts.app')] class extends Component
                 type="text" 
                 id="titulo" 
                 wire:model="titulo" 
-                placeholder="Ex: Procedimento de estanqueidade de válvulas durante faina de snorquel em mar grosso"
-                class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition-colors"
+                placeholder="Ex: Procedimento de estanqueidade de válvulas durante faina de snorquel em mar grosso" 
+                class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition-colors"
             />
             @error('titulo') <span class="text-[11px] text-red-400 font-mono mt-1 block">{{ $message }}</span> @enderror
         </div>
@@ -549,13 +509,13 @@ new #[Layout('layouts.app')] class extends Component
                 id="relato" 
                 wire:model="relato" 
                 rows="4" 
-                placeholder="Descreva de forma clara e objetiva o que aconteceu, quais sistemas foram afetados, a cota de imersão, estado de prontidão e ação imediata adotada pela tripulação..."
-                class="w-full bg-[#02050d] border border-gray-800 rounded-xl p-3.5 text-xs text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition-colors leading-relaxed"
+                placeholder="Descreva de forma clara e objetiva o que aconteceu, quais sistemas foram afetados, a cota de imersão, estado de prontidão e ação imediata adotada pela tripulação..." 
+                class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-sans leading-relaxed transition-colors"
             ></textarea>
             @error('relato') <span class="text-[11px] text-red-400 font-mono mt-1 block">{{ $message }}</span> @enderror
         </div>
 
-        <!-- 5ª Linha: Recomendação / Lição Homologada -->
+        <!-- 5ª Linha: Recomendação Doutrinária -->
         <div>
             <label for="recomendacao" class="block text-xs font-mono uppercase text-gray-300 font-semibold mb-2">
                 Lição Doutrinária / Recomendação Técnica <span class="text-red-400">*</span>
@@ -564,35 +524,338 @@ new #[Layout('layouts.app')] class extends Component
                 id="recomendacao" 
                 wire:model="recomendacao" 
                 rows="3" 
-                placeholder="Indique a recomendação corretiva, modificação de procedimento operacional padrão (POP), diretriz de segurança ou necessidade de revisão pelo CIAMA/CASNAV..."
-                class="w-full bg-[#02050d] border border-gray-800 rounded-xl p-3.5 text-xs text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition-colors leading-relaxed"
+                placeholder="Indique a recomendação corretiva, modificação de check-list operacional ou medida de prevenção a ser difundida para todas as tripulações..." 
+                class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-sans leading-relaxed transition-colors"
             ></textarea>
             @error('recomendacao') <span class="text-[11px] text-red-400 font-mono mt-1 block">{{ $message }}</span> @enderror
         </div>
 
-        <!-- Botões de Ação do Formulário -->
-        <div class="pt-4 border-t border-gray-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div class="text-[11px] font-mono text-gray-400">
-                <span class="text-yellow-400 font-bold">* Campos obrigatórios</span> • Submetido sob autenticação do NIP: <span class="text-white font-bold">{{ auth()->user()->nip }}</span>
+        <!-- Barra Inferior de Ações -->
+        <div class="pt-4 border-t border-gray-800/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="text-xs font-mono text-gray-400 flex items-center gap-2">
+                <span class="text-yellow-400 font-bold">* Campos obrigatórios</span>
+                <span>• Notificante: <strong class="text-white">{{ auth()->user()->graduacao }} {{ auth()->user()->name }}</strong> (NIP: {{ auth()->user()->nip }})</span>
             </div>
 
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 w-full sm:w-auto">
                 <a 
-                    href="{{ route('licoes.dashboard') }}" 
-                    wire:navigate 
-                    class="px-4 py-2.5 rounded-xl text-xs font-mono font-bold text-gray-400 hover:text-white bg-gray-900 border border-gray-800 hover:border-gray-700 transition-colors cursor-pointer"
+                    href="{{ route('dashboard') }}" 
+                    wire:navigate
+                    class="w-full sm:w-auto text-center px-4 py-2.5 rounded-xl text-xs font-mono font-bold text-gray-400 hover:text-white bg-gray-900/60 hover:bg-gray-900 border border-gray-800 transition-colors cursor-pointer"
                 >
                     Cancelar
                 </a>
                 <button 
                     type="submit" 
-                    class="px-6 py-2.5 rounded-xl text-xs font-mono font-bold text-white bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-600 hover:to-blue-500 shadow-lg shadow-blue-900/40 border border-blue-500/40 transition-all cursor-pointer"
+                    class="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-xs font-mono font-bold text-white bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-600 hover:to-blue-500 shadow-lg shadow-blue-900/50 border border-blue-500/40 transition-all cursor-pointer"
                 >
-                    Homologar Registro Preliminar
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                    </svg>
+                    <span>Homologar Registro Preliminar</span>
                 </button>
             </div>
         </div>
     </form>
+
+    <!-- ========================================================================= -->
+    <!-- LEFT SIDEBAR MODAL (DRAWER LATERAL) ESTILO ARGON PRO                       -->
+    <!-- ========================================================================= -->
+    @if ($drawerAberto)
+        <div class="fixed inset-0 z-50 overflow-hidden">
+            <!-- Backdrop escuro com blur -->
+            <div 
+                class="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity animate-in fade-in duration-200" 
+                wire:click="fecharDrawer"
+            ></div>
+
+            <!-- Drawer Deslizante da Esquerda (Left Sidebar Modal) -->
+            <aside class="fixed inset-y-0 left-0 max-w-md sm:max-w-lg w-full bg-[#040915] border-r border-blue-500/40 shadow-2xl flex flex-col z-50 animate-in slide-in-from-left duration-300">
+                <!-- Header do Drawer -->
+                <div class="p-6 bg-gradient-to-r from-blue-950/90 to-[#040a16] border-b border-gray-800 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/40 flex items-center justify-center text-blue-400 shrink-0">
+                            @if ($drawerTipo === 'meio_naval')
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                            @elseif ($drawerTipo === 'subsistema')
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            @else
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            @endif
+                        </div>
+                        <div>
+                            <div class="text-[10px] font-mono uppercase tracking-wider text-blue-400 font-semibold">
+                                Painel de Apoio Rápido • Tabelas de Apoio
+                            </div>
+                            <h2 class="text-base font-bold text-white uppercase font-oswald tracking-wide">
+                                @if ($drawerTipo === 'meio_naval')
+                                    Cadastrar Meio Naval / OM
+                                @elseif ($drawerTipo === 'subsistema')
+                                    Cadastrar Subsistema Operacional
+                                @else
+                                    Cadastrar Comissão Operacional
+                                @endif
+                            </h2>
+                        </div>
+                    </div>
+
+                    <button 
+                        type="button" 
+                        wire:click="fecharDrawer" 
+                        class="p-2 text-gray-400 hover:text-white rounded-xl hover:bg-gray-800/80 transition-colors cursor-pointer"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Conteúdo do Formulário no Drawer Lateral -->
+                <div class="p-6 overflow-y-auto flex-1 space-y-4 text-xs font-mono text-gray-300">
+                    <div class="p-3 rounded-xl bg-blue-950/30 border border-blue-800/40 text-[11px] leading-relaxed text-blue-300">
+                        Ao salvar, o registro será adicionado automaticamente à respectiva tabela de apoio e selecionado diretamente no formulário da sua lição.
+                    </div>
+
+                    <!-- CASO 1: MEIO NAVAL -->
+                    @if ($drawerTipo === 'meio_naval')
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-gray-300 uppercase font-semibold mb-1">
+                                    Indicativo Naval <span class="text-red-400">*</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    wire:model="drawerMeioIndicativo" 
+                                    placeholder="Ex: S34, S40, BACS, CIAMA..." 
+                                    class="w-full bg-[#02050d] border border-gray-700 rounded-xl px-3.5 py-2 text-white font-mono uppercase focus:outline-none focus:border-blue-500"
+                                />
+                                @error('drawerMeioIndicativo') <span class="text-[10px] text-red-400 block mt-1">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-300 uppercase font-semibold mb-1">
+                                    Nome do Meio / OM <span class="text-red-400">*</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    wire:model="drawerMeioNome" 
+                                    placeholder="Ex: Submarino Tikuna, Base Almirante Castro e Silva..." 
+                                    class="w-full bg-[#02050d] border border-gray-700 rounded-xl px-3.5 py-2 text-white font-mono focus:outline-none focus:border-blue-500"
+                                />
+                                @error('drawerMeioNome') <span class="text-[10px] text-red-400 block mt-1">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-300 uppercase font-semibold mb-1">Tipo do Meio</label>
+                                <select 
+                                    wire:model="drawerMeioTipo" 
+                                    class="w-full bg-[#02050d] border border-gray-700 rounded-xl px-3.5 py-2 text-white font-mono focus:outline-none focus:border-blue-500"
+                                >
+                                    <option value="Submarino">Submarino</option>
+                                    <option value="Organização Militar">Organização Militar</option>
+                                    <option value="Embarcação de Apoio">Embarcação de Apoio</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-300 uppercase font-semibold mb-1">Classe / Projeto</label>
+                                <select 
+                                    wire:model="drawerMeioClasse" 
+                                    class="w-full bg-[#02050d] border border-gray-700 rounded-xl px-3.5 py-2 text-white font-mono focus:outline-none focus:border-blue-500"
+                                >
+                                    <option value="Classe Riachuelo (S-BR)">Classe Riachuelo (S-BR)</option>
+                                    <option value="Classe Tikuna (IKL Mod)">Classe Tikuna (IKL Mod)</option>
+                                    <option value="Classe Tupi (IKL 209)">Classe Tupi (IKL 209)</option>
+                                    <option value="Propulsão Nuclear (SN-BR)">Propulsão Nuclear (SN-BR)</option>
+                                    <option value="Base Operacional">Base Operacional</option>
+                                    <option value="Centro de Instrução">Centro de Instrução</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-300 uppercase font-semibold mb-1">Status Operativo</label>
+                                <select 
+                                    wire:model="drawerMeioStatus" 
+                                    class="w-full bg-[#02050d] border border-gray-700 rounded-xl px-3.5 py-2 text-white font-mono focus:outline-none focus:border-blue-500"
+                                >
+                                    <option value="Operacional">Operacional</option>
+                                    <option value="Em Manutenção">Em Manutenção</option>
+                                    <option value="Em Construção">Em Construção</option>
+                                    <option value="Ativa">Ativa</option>
+                                </select>
+                            </div>
+                        </div>
+
+                    <!-- CASO 2: SUBSISTEMA -->
+                    @elseif ($drawerTipo === 'subsistema')
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-gray-300 uppercase font-semibold mb-1">
+                                    Nome do Subsistema / Equipamento <span class="text-red-400">*</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    wire:model="drawerSisNome" 
+                                    placeholder="Ex: Motores de Combustão Principal (MCP), Sonar Flank Array..." 
+                                    class="w-full bg-[#02050d] border border-gray-700 rounded-xl px-3.5 py-2 text-white font-mono focus:outline-none focus:border-blue-500"
+                                />
+                                @error('drawerSisNome') <span class="text-[10px] text-red-400 block mt-1">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-300 uppercase font-semibold mb-1">Área Técnica / Categoria</label>
+                                <select 
+                                    wire:model="drawerSisArea" 
+                                    class="w-full bg-[#02050d] border border-gray-700 rounded-xl px-3.5 py-2 text-white font-mono focus:outline-none focus:border-blue-500"
+                                >
+                                    <option value="Propulsão & Geração">Propulsão & Geração</option>
+                                    <option value="Governo & Imersão">Governo & Imersão</option>
+                                    <option value="Eletricidade Naval">Eletricidade Naval</option>
+                                    <option value="Sensores & Sonar">Sensores & Sonar</option>
+                                    <option value="Armamento Submarino">Armamento Submarino</option>
+                                    <option value="Atmosfera & CAV">Atmosfera & CAV</option>
+                                    <option value="Comunicações">Comunicações</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-300 uppercase font-semibold mb-1">Criticidade Operacional</label>
+                                <select 
+                                    wire:model="drawerSisCriticidade" 
+                                    class="w-full bg-[#02050d] border border-gray-700 rounded-xl px-3.5 py-2 text-white font-mono focus:outline-none focus:border-blue-500"
+                                >
+                                    <option value="Crítica de Segurança">Crítica de Segurança</option>
+                                    <option value="Operacional Essencial">Operacional Essencial</option>
+                                    <option value="Tática">Tática</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-300 uppercase font-semibold mb-1">Status</label>
+                                <select 
+                                    wire:model="drawerSisStatus" 
+                                    class="w-full bg-[#02050d] border border-gray-700 rounded-xl px-3.5 py-2 text-white font-mono focus:outline-none focus:border-blue-500"
+                                >
+                                    <option value="Homologado">Homologado</option>
+                                    <option value="Em Análise">Em Análise</option>
+                                </select>
+                            </div>
+                        </div>
+
+                    <!-- CASO 3: COMISSÃO OPERACIONAL -->
+                    @elseif ($drawerTipo === 'comissao')
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-gray-300 uppercase font-semibold mb-1">
+                                    Código da Comissão <span class="text-red-400">*</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    wire:model="drawerComCodigo" 
+                                    placeholder="Ex: TROPICALEX-2026, ADESTRA-S34..." 
+                                    class="w-full bg-[#02050d] border border-gray-700 rounded-xl px-3.5 py-2 text-white font-mono uppercase focus:outline-none focus:border-blue-500"
+                                />
+                                @error('drawerComCodigo') <span class="text-[10px] text-red-400 block mt-1">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-300 uppercase font-semibold mb-1">
+                                    Nome da Comissão / Missão <span class="text-red-400">*</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    wire:model="drawerComNome" 
+                                    placeholder="Ex: Operação Tropicalex, Adestramento de Equipe..." 
+                                    class="w-full bg-[#02050d] border border-gray-700 rounded-xl px-3.5 py-2 text-white font-mono focus:outline-none focus:border-blue-500"
+                                />
+                                @error('drawerComNome') <span class="text-[10px] text-red-400 block mt-1">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-300 uppercase font-semibold mb-1">Tipo de Operação</label>
+                                <select 
+                                    wire:model="drawerComTipo" 
+                                    class="w-full bg-[#02050d] border border-gray-700 rounded-xl px-3.5 py-2 text-white font-mono focus:outline-none focus:border-blue-500"
+                                >
+                                    <option value="Adestramento de Imersão">Adestramento de Imersão</option>
+                                    <option value="Operação Multinacional">Operação Multinacional</option>
+                                    <option value="Patrulha de Vigilância">Patrulha de Vigilância</option>
+                                    <option value="Teste de Aceitação de Mar">Teste de Aceitação de Mar</option>
+                                </select>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-gray-300 uppercase font-semibold mb-1">Ano</label>
+                                    <input 
+                                        type="number" 
+                                        wire:model="drawerComAno" 
+                                        placeholder="2026" 
+                                        class="w-full bg-[#02050d] border border-gray-700 rounded-xl px-3.5 py-2 text-white font-mono focus:outline-none focus:border-blue-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label class="block text-gray-300 uppercase font-semibold mb-1">Status</label>
+                                    <select 
+                                        wire:model="drawerComStatus" 
+                                        class="w-full bg-[#02050d] border border-gray-700 rounded-xl px-3.5 py-2 text-white font-mono focus:outline-none focus:border-blue-500"
+                                    >
+                                        <option value="Concluída">Concluída</option>
+                                        <option value="Em Andamento">Em Andamento</option>
+                                        <option value="Planejada">Planejada</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Footer do Drawer com Ações -->
+                <div class="p-4 sm:p-6 bg-gray-950/90 border-t border-gray-800 flex items-center justify-between gap-3">
+                    <button 
+                        type="button" 
+                        wire:click="fecharDrawer" 
+                        class="px-4 py-2 rounded-xl text-xs font-mono font-bold text-gray-400 hover:text-white bg-gray-900 border border-gray-700 transition-colors cursor-pointer"
+                    >
+                        Cancelar
+                    </button>
+
+                    @if ($drawerTipo === 'meio_naval')
+                        <button 
+                            type="button" 
+                            wire:click="salvarDrawerMeio" 
+                            class="px-5 py-2 rounded-xl text-xs font-mono font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-900/50 border border-blue-500/40 transition-all cursor-pointer"
+                        >
+                            + Salvar & Selecionar Meio
+                        </button>
+                    @elseif ($drawerTipo === 'subsistema')
+                        <button 
+                            type="button" 
+                            wire:click="salvarDrawerSistema" 
+                            class="px-5 py-2 rounded-xl text-xs font-mono font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-900/50 border border-blue-500/40 transition-all cursor-pointer"
+                        >
+                            + Salvar & Selecionar Subsistema
+                        </button>
+                    @elseif ($drawerTipo === 'comissao')
+                        <button 
+                            type="button" 
+                            wire:click="salvarDrawerComissao" 
+                            class="px-5 py-2 rounded-xl text-xs font-mono font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-900/50 border border-blue-500/40 transition-all cursor-pointer"
+                        >
+                            + Salvar & Selecionar Comissão
+                        </button>
+                    @endif
+                </div>
+            </aside>
+        </div>
+    @endif
 
     <!-- Modal de Guia de Preenchimento da Lição Aprendida -->
     @if ($modalGuiaAberto)
@@ -602,16 +865,24 @@ new #[Layout('layouts.app')] class extends Component
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-lg bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-400">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                             </svg>
                         </div>
                         <div>
-                            <h3 class="text-sm font-bold text-white uppercase tracking-wider font-mono">Guia de Preenchimento: Lições Aprendidas</h3>
+                            <h3 class="text-sm font-bold text-white uppercase tracking-wider font-mono">
+                                Guia de Preenchimento: Lições Aprendidas
+                            </h3>
                             <p class="text-xs text-blue-400/80 font-mono">Diretrizes do Estado-Maior do ComForS</p>
                         </div>
                     </div>
-                    <button wire:click="fecharGuia" class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    <button 
+                        type="button" 
+                        wire:click="fecharGuia" 
+                        class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
                     </button>
                 </div>
 
@@ -624,33 +895,47 @@ new #[Layout('layouts.app')] class extends Component
                     <div class="space-y-3">
                         <div class="border-l-2 border-blue-500 pl-3">
                             <p class="text-white font-bold">1. Meio Naval / OM</p>
-                            <p class="text-gray-400 text-[11px] mt-0.5">Submarino ou Organização Militar em que a lição foi verificada. Se o meio não estiver na lista, utilize <span class="text-yellow-400 font-bold">+ Adicionar Novo</span> para cadastrá-lo imediatamente.</p>
+                            <p class="text-gray-400 text-[11px] mt-0.5">
+                                Submarino ou OM onde a ocorrência foi registrada. Clique em <span class="text-yellow-400 font-bold">+ Adicionar Novo</span> para abrir o painel lateral com todos os campos cadastrais da tabela de apoio.
+                            </p>
                         </div>
 
                         <div class="border-l-2 border-blue-500 pl-3">
-                            <p class="text-white font-bold">2. Comissão Operacional</p>
-                            <p class="text-gray-400 text-[11px] mt-0.5">Indica a faina ou viagem onde ocorreu a observação. O campo de <span class="text-amber-400 font-bold">RFC</span> vincula a ocorrência ao Relatório Final de Comissão que será gerenciado pelo módulo SIPA-SUB.</p>
+                            <p class="text-white font-bold">2. Comissão Operacional & Data</p>
+                            <p class="text-gray-400 text-[11px] mt-0.5">
+                                Identifica a missão naval na qual o evento ocorreu e a data cronológica exata do fato observado.
+                            </p>
                         </div>
 
                         <div class="border-l-2 border-blue-500 pl-3">
                             <p class="text-white font-bold">3. Subsistema Afetado</p>
-                            <p class="text-gray-400 text-[11px] mt-0.5">Componente técnico envolvido (Propulsão MCP/MEP, Lastro, Sonar, Baterias). Caso necessário, adicione novos componentes sob demanda.</p>
+                            <p class="text-gray-400 text-[11px] mt-0.5">
+                                Equipamento ou área de engenharia envolvida (MCP, MEP, Lastro, Sonar, CAV). Também pode ser adicionado pelo painel lateral com sua área técnica e criticidade.
+                            </p>
                         </div>
 
                         <div class="border-l-2 border-blue-500 pl-3">
                             <p class="text-white font-bold">4. Grau de Sigilo</p>
-                            <p class="text-gray-400 text-[11px] mt-0.5">Classificação doutrinária de acesso da informação: <span class="text-emerald-400">Ostensivo</span>, <span class="text-blue-400">Reservado</span>, <span class="text-yellow-400">Confidencial</span> ou <span class="text-red-400">Secreto</span>.</p>
+                            <p class="text-gray-400 text-[11px] mt-0.5">
+                                Classificação doutrinária da informação segundo a legislação militar: <span class="text-emerald-400">Ostensivo</span>, <span class="text-blue-400">Reservado</span>, <span class="text-yellow-400">Confidencial</span> ou <span class="text-red-400">Secreto</span>.
+                            </p>
                         </div>
 
                         <div class="border-l-2 border-blue-500 pl-3">
                             <p class="text-white font-bold">5. Relato Circunstanciado & Recomendação Técnica</p>
-                            <p class="text-gray-400 text-[11px] mt-0.5">O relato deve conter a cronologia dos fatos com precisão técnica. A recomendação deve orientar correções em procedimentos operacionais, manuais do fabricante ou inspeções periódicas.</p>
+                            <p class="text-gray-400 text-[11px] mt-0.5">
+                                O relato deve conter a cronologia precisa dos fatos e ações no mar. A recomendação deve orientar correções em procedimentos operacionais padrão (POPs), planos de manutenção preventiva ou instrução no CIAMA.
+                            </p>
                         </div>
                     </div>
                 </div>
 
                 <div class="px-6 py-3.5 bg-gray-950/80 border-t border-gray-800 flex items-center justify-end">
-                    <button wire:click="fecharGuia" class="px-4 py-2 rounded-xl text-xs font-mono font-semibold bg-blue-600 hover:bg-blue-500 text-white transition-colors cursor-pointer">
+                    <button 
+                        type="button" 
+                        wire:click="fecharGuia" 
+                        class="px-4 py-2 rounded-xl text-xs font-mono font-semibold bg-blue-600 hover:bg-blue-500 text-white transition-colors cursor-pointer"
+                    >
                         Entendido / Fechar Guia
                     </button>
                 </div>
