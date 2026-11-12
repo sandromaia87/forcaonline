@@ -2,10 +2,17 @@
 
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
+use Livewire\WithFileUploads;
 use Illuminate\Support\Str;
 
 new #[Layout('layouts.app')] class extends Component
 {
+    use WithFileUploads;
+
+    // Upload de Documento PDF (Limite 10 MB)
+    public $arquivo_pdf = null;
+    public ?string $nome_arquivo_pdf = null;
+    public ?int $tamanho_arquivo_pdf = null;
     // Listas dinâmicas
     public array  = [];
     public array  = [];
@@ -256,11 +263,22 @@ new #[Layout('layouts.app')] class extends Component
             'titulo' => 'required|min:5|max:255',
             'ementa' => 'required|min:10',
             'grau_sigilo' => 'required|in:OSTENSIVO,RESERVADO,CONFIDENCIAL,SECRETO',
+            'arquivo_pdf' => 'nullable|file|mimes:pdf|max:10240',
         ], [
             'tipo_sigla.required' => 'Selecione o tipo de documento ou adicione um novo.',
             'titulo.required' => 'Informe o título do documento (mínimo 5 caracteres).',
             'ementa.required' => 'Descreva suscintamente a ementa ou resumo do documento.',
+            'arquivo_pdf.file' => 'O anexo enviado é inválido.',
+            'arquivo_pdf.mimes' => 'O arquivo enviado deve ser estritamente no formato PDF.',
+            'arquivo_pdf.max' => 'O arquivo PDF não pode ultrapassar o limite máximo de 10 MB.',
         ]);
+
+        $nomeOriginal = null;
+        $tamanhoBytes = null;
+        if ($this->arquivo_pdf) {
+            $nomeOriginal = $this->arquivo_pdf->getClientOriginalName();
+            $tamanhoBytes = $this->arquivo_pdf->getSize();
+        }
 
         $tipoEncontrado = collect($this->tipos_documento)->firstWhere('sigla', $this->tipo_sigla);
         $nomeTipo = $tipoEncontrado['nome'] ?? $this->tipo_sigla;
@@ -276,6 +294,8 @@ new #[Layout('layouts.app')] class extends Component
             'data_documento' => $this->data_documento ?: date('Y-m-d'),
             'titulo' => trim($this->titulo),
             'ementa' => trim($this->ementa),
+            'arquivo_pdf_nome' => $nomeOriginal,
+            'arquivo_pdf_tamanho' => $tamanhoBytes,
             'autor' => auth()->user()->graduacao . ' ' . auth()->user()->name,
             'nip' => auth()->user()->nip,
             'status' => 'Cadastrado',
@@ -290,7 +310,7 @@ new #[Layout('layouts.app')] class extends Component
 
     public function resetForm(): void
     {
-        $this->reset(['tipo_sigla', 'numero_gerado', 'submarino', 'comissao', 'titulo', 'ementa']);
+        $this->reset(['tipo_sigla', 'numero_gerado', 'submarino', 'comissao', 'titulo', 'ementa', 'arquivo_pdf', 'nome_arquivo_pdf', 'tamanho_arquivo_pdf']);
         $this->grau_sigilo = 'RESERVADO';
         $this->data_documento = date('Y-m-d');
         $this->salvo = false;
@@ -554,6 +574,95 @@ new #[Layout('layouts.app')] class extends Component
                 class="w-full bg-[#02050d] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 font-sans leading-relaxed"
             ></textarea>
             @error('ementa') <span class="text-[11px] text-red-400 font-mono mt-1 block">{{ $message }}</span> @enderror
+        </div>
+
+        <!-- Linha 5: Upload de Arquivo PDF Oficial (Limite Máximo de 10 MB) -->
+        <div>
+            <div class="flex items-center justify-between mb-2">
+                <label for="arquivo_pdf" class="text-xs font-mono uppercase text-gray-300 font-semibold flex items-center gap-2">
+                    <span>Anexo do Documento (PDF)</span>
+                    <span class="text-[10px] text-blue-400 bg-blue-950/80 border border-blue-800/60 px-2 py-0.5 rounded font-normal">
+                        Limite: 10 MB
+                    </span>
+                </label>
+                @if ($arquivo_pdf)
+                    <button 
+                        type="button" 
+                        wire:click="$set('arquivo_pdf', null)" 
+                        class="text-[11px] font-mono text-red-400 hover:text-red-300 hover:underline cursor-pointer"
+                    >
+                        ✕ Remover PDF
+                    </button>
+                @endif
+            </div>
+
+            @if ($arquivo_pdf)
+                <!-- Card de Arquivo PDF Selecionado -->
+                <div class="p-4 rounded-xl bg-blue-950/30 border border-blue-500/40 flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-3.5 min-w-0">
+                        <div class="w-10 h-10 rounded-xl bg-red-500/20 border border-red-500/40 flex items-center justify-center text-red-400 shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-xs font-bold text-white font-mono truncate">
+                                {{ $arquivo_pdf->getClientOriginalName() }}
+                            </div>
+                            <div class="text-[11px] text-gray-400 font-mono mt-0.5 flex items-center gap-2">
+                                <span class="text-emerald-400 font-bold">{{ number_format($arquivo_pdf->getSize() / 1024 / 1024, 2) }} MB</span>
+                                <span>•</span>
+                                <span class="text-blue-300">Formato PDF Validado</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button 
+                        type="button" 
+                        wire:click="$set('arquivo_pdf', null)" 
+                        class="p-2 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-950/30 transition-colors shrink-0 cursor-pointer"
+                        title="Remover este anexo"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                </div>
+            @else
+                <!-- Dropzone de Seleção de PDF -->
+                <div class="relative border-2 border-dashed border-gray-700 hover:border-blue-500/60 rounded-2xl p-6 text-center transition-all bg-[#02050d] group cursor-pointer">
+                    <input 
+                        type="file" 
+                        id="arquivo_pdf" 
+                        wire:model="arquivo_pdf" 
+                        accept="application/pdf" 
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+                    />
+                    <div class="flex flex-col items-center justify-center gap-2">
+                        <div class="w-12 h-12 rounded-xl bg-blue-500/10 group-hover:bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400 transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                            </svg>
+                        </div>
+                        <div class="text-xs font-mono text-gray-300">
+                            <span class="text-blue-400 font-bold group-hover:underline">Clique para selecionar o PDF</span> ou arraste o arquivo aqui
+                        </div>
+                        <p class="text-[10px] font-mono text-gray-500">
+                            Formato aceito: <strong class="text-yellow-400">.PDF</strong> • Tamanho máximo permitido: <strong class="text-yellow-400">10 MB</strong>
+                        </p>
+                    </div>
+                </div>
+            @endif
+
+            <!-- Loading de upload -->
+            <div wire:loading wire:target="arquivo_pdf" class="text-xs text-blue-400 font-mono mt-2 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                <span>Processando e validando arquivo PDF...</span>
+            </div>
+
+            @error('arquivo_pdf') 
+                <span class="text-[11px] text-red-400 font-mono mt-1.5 block">{{ $message }}</span> 
+            @enderror
         </div>
 
         <!-- Barra Inferior de Ações -->
