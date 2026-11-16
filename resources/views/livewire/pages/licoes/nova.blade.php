@@ -5,47 +5,47 @@ use Livewire\Volt\Component;
 
 new #[Layout('layouts.app')] class extends Component
 {
-    // Listas dinâmicas
-    public array  = [];
-    public array  = [];
-    public array  = [];
+    // Listas dinâmicas que iniciam vazias conforme especificado
+    public array $meios_navais = [];
+    public array $sistemas = [];
+    public array $comissoes = [];
     
-    // Dados do formulário da lição
-    public string  = '';
-    public string  = 'RESERVADO';
-    public string  = '';
-    public string  = '';
-    public string  = '';
-    public string  = '';
-    public string  = '';
-    public string  = '';
-
-    public bool  = false;
-    public bool  = false;
-
+    // Dados do formulário
+    public string $submarino = '';
+    public string $grau_sigilo = 'RESERVADO';
+    public string $sistema = '';
+    public string $comissao = '';
+    public string $data_ocorrencia = '';
+    public string $titulo = '';
+    public string $relato = '';
+    public string $recomendacao = '';
+    
+    public bool $salvo = false;
+    public bool $modalGuiaAberto = false;
+    
     // Left Sidebar Modal (Drawer Lateral de Apoio)
-    public bool  = false;
-    public string  = ''; // 'meio_naval' | 'subsistema' | 'comissao'
-
+    public bool $drawerAberto = false;
+    public string $drawerTipo = ''; // 'meio_naval' | 'subsistema' | 'comissao'
+    
     // Campos do Drawer: Meio Naval
-    public string  = '';
-    public string  = '';
-    public string  = 'Submarino';
-    public string  = 'Classe Riachuelo (S-BR)';
-    public string  = 'Operacional';
-
+    public string $drawerMeioIndicativo = '';
+    public string $drawerMeioNome = '';
+    public string $drawerMeioTipo = 'Submarino';
+    public string $drawerMeioClasse = 'Classe Riachuelo (S-BR)';
+    public string $drawerMeioStatus = 'Operacional';
+    
     // Campos do Drawer: Subsistema
-    public string  = '';
-    public string  = 'Propulsão & Geração';
-    public string  = 'Crítica de Segurança';
-    public string  = 'Homologado';
-
+    public string $drawerSisNome = '';
+    public string $drawerSisArea = 'Propulsão & Geração';
+    public string $drawerSisCriticidade = 'Crítica de Segurança';
+    public string $drawerSisStatus = 'Homologado';
+    
     // Campos do Drawer: Comissão
-    public string  = '';
-    public string  = '';
-    public string  = 'Adestramento de Imersão';
-    public string  = '';
-    public string  = 'Concluída';
+    public string $drawerComCodigo = '';
+    public string $drawerComNome = '';
+    public string $drawerComTipo = 'Adestramento de Imersão';
+    public string $drawerComAno = '';
+    public string $drawerComStatus = 'Concluída';
 
     public function mount(): void
     {
@@ -231,9 +231,6 @@ new #[Layout('layouts.app')] class extends Component
         $ano = $this->data_ocorrencia ? date('Y', strtotime($this->data_ocorrencia)) : date('Y');
         $totalExistentes = count(session('licoes_aprendidas_registros', []));
         $seq = str_pad((string)($totalExistentes + 1), 4, '0', STR_PAD_LEFT);
-        $protocolo = "LA-{\Cardano_ano}-{$seq}";
-        $protocolo = "LA-{\Cardano_ano}-{$seq}";
-        $protocolo = "LA-{\Cardano_ano}-{$seq}";
         $protocolo = "LA-{$ano}-{$seq}";
 
         $novaLicao = [

@@ -8,52 +8,52 @@ use Illuminate\Support\Str;
 new #[Layout('layouts.app')] class extends Component
 {
     use WithFileUploads;
-
+    
     // Upload de Documento PDF (Limite 10 MB)
     public $arquivo_pdf = null;
     public ?string $nome_arquivo_pdf = null;
     public ?int $tamanho_arquivo_pdf = null;
     // Listas dinâmicas
-    public array  = [];
-    public array  = [];
-    public array  = [];
-
+    public array $tipos_documento = [];
+    public array $meios_navais = [];
+    public array $comissoes = [];
+    
     // Campos do formulário
-    public string  = '';
-    public string  = '';
-    public string  = '';
-    public string  = '';
-    public string  = 'RESERVADO';
-    public string  = '';
-    public string  = '';
-    public string  = '';
-
-    public bool  = false;
-    public bool  = false;
-
+    public string $tipo_sigla = '';
+    public string $numero_gerado = '';
+    public string $submarino = '';
+    public string $comissao = '';
+    public string $grau_sigilo = 'RESERVADO';
+    public string $data_documento = '';
+    public string $titulo = '';
+    public string $ementa = '';
+    
+    public bool $salvo = false;
+    public bool $modalGuiaAberto = false;
+    
     // Right Sidebar Modal (Drawer Lateral à Direita)
-    public bool  = false;
-    public string  = ''; // 'tipo_documento' | 'meio_naval' | 'comissao'
-
+    public bool $drawerAberto = false;
+    public string $drawerTipo = ''; // 'tipo_documento' | 'meio_naval' | 'comissao'
+    
     // Campos do Drawer: Tipo de Documento
-    public string  = '';
-    public string  = '';
-    public string  = '';
-    public string  = 'Ativo';
-
+    public string $drawerTipoSigla = '';
+    public string $drawerTipoNome = '';
+    public string $drawerTipoDescricao = '';
+    public string $drawerTipoStatus = 'Ativo';
+    
     // Campos do Drawer: Meio Naval
-    public string  = '';
-    public string  = '';
-    public string  = 'Submarino';
-    public string  = 'Classe Riachuelo (S-BR)';
-    public string  = 'Operacional';
-
+    public string $drawerMeioIndicativo = '';
+    public string $drawerMeioNome = '';
+    public string $drawerMeioTipo = 'Submarino';
+    public string $drawerMeioClasse = 'Classe Riachuelo (S-BR)';
+    public string $drawerMeioStatus = 'Operacional';
+    
     // Campos do Drawer: Comissão
-    public string  = '';
-    public string  = '';
-    public string  = 'Adestramento de Imersão';
-    public string  = '';
-    public string  = 'Concluída';
+    public string $drawerComCodigo = '';
+    public string $drawerComNome = '';
+    public string $drawerComTipo = 'Adestramento de Imersão';
+    public string $drawerComAno = '';
+    public string $drawerComStatus = 'Concluída';
 
     public function mount(): void
     {
