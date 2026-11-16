@@ -37,7 +37,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return redirect()->route('licoes.dashboard');
     })->name('dashboard');
 
-    // Rota operacional camuflada com identificador discreto
     Route::prefix('sys-ops')->name('sys.ops.')->group(function () {
         Volt::route('/k7-overview', 'pages.core.terminal')->name('k7');
     });
