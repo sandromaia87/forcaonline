@@ -304,7 +304,7 @@ new #[Layout('layouts.app')] class extends Component
     </div>
 
     <!-- Alerta de Sucesso -->
-    @if ()
+    @if ($salvo)
         <div class="p-6 rounded-2xl bg-gradient-to-r from-emerald-950/80 to-[#041a12] border border-emerald-500/40 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3.5">
                 <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0">

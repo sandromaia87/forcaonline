@@ -413,7 +413,7 @@ new #[Layout('layouts.app')] class extends Component
                             <span>+ Novo Tipo</span>
                         </button>
                         <a 
-                            href="{{ route('tipos-documento') }}" 
+                            href="{{ route('licoes.tipos-documento') }}" 
                             wire:navigate 
                             class="text-[10px] font-mono text-blue-400 hover:underline cursor-pointer"
                         >
